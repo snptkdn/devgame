@@ -1,6 +1,48 @@
-import type { PlayerState, Allocation } from './types';
+import type { PlayerState, Allocation, LivingStandards, Project } from './types';
 
-// Box-Muller変換で正規分布（平均1.0、標準偏差0.2）の「地頭の良さ」を生成
+export const AVAILABLE_PROJECTS: Project[] = [
+  {
+    id: 'proj_1',
+    name: '【保守】社内ツールの運用保守',
+    description: '簡単な業務。成長は少ないが確実。',
+    durationYears: 1,
+    requiredTech: 0,
+    techGrowthPerYear: 5,
+    completionBonusTech: 2,
+    completionBonusFunds: 50
+  },
+  {
+    id: 'proj_2',
+    name: '【開発】新規Webサービス開発',
+    description: '一般的な開発案件。着実にスキルが身につく。',
+    durationYears: 2,
+    requiredTech: 20,
+    techGrowthPerYear: 15,
+    completionBonusTech: 10,
+    completionBonusFunds: 200
+  },
+  {
+    id: 'proj_3',
+    name: '【基盤】大規模システムのリプレイス',
+    description: '長期間拘束されるが、完了時の見返りは大きい。',
+    durationYears: 3,
+    requiredTech: 50,
+    techGrowthPerYear: 20,
+    completionBonusTech: 30,
+    completionBonusFunds: 500
+  },
+  {
+    id: 'proj_4',
+    name: '【先端】AIアルゴリズム研究開発',
+    description: '高度な技術を要求される最先端プロジェクト。',
+    durationYears: 4,
+    requiredTech: 100,
+    techGrowthPerYear: 30,
+    completionBonusTech: 60,
+    completionBonusFunds: 1000
+  }
+];
+
 export const generateIntelligence = (): number => {
   let u = 0, v = 0;
   while(u === 0) u = Math.random();
@@ -8,28 +50,31 @@ export const generateIntelligence = (): number => {
   const stdNormal = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
   const mean = 1.0;
   const stdDev = 0.2;
-  // 0.2 ~ 1.8 くらいに丸める
   return Math.max(0.2, Math.min(1.8, mean + stdDev * stdNormal));
 };
 
 export const createInitialState = (): PlayerState => {
   return {
     age: 22,
-    funds: 100, // 初期資金 100万円とする
+    funds: 100,
     tech: 10,
     health: 100,
     network: 10,
     intelligence: generateIntelligence(),
     isAlive: true,
-    livingStandardLevel: 1, // 初期生活水準
+    livingStandards: {
+      housing: 1,
+      food: 1,
+      entertainment: 1
+    },
+    currentProject: null,
+    projectYearsLeft: 0,
     history: ["人生シミュレーションを開始しました。"],
   };
 };
 
-// 死亡確率の計算
-// 年齢と健康度からその年の死亡確率(0~1)を算出する
 export const calculateDeathProbability = (age: number, health: number): number => {
-  let baseProb = 0.001; // 若年層の基本確率
+  let baseProb = 0.001;
 
   if (age > 80) baseProb = 0.15;
   else if (age > 70) baseProb = 0.05;
@@ -37,94 +82,106 @@ export const calculateDeathProbability = (age: number, health: number): number =
   else if (age > 50) baseProb = 0.005;
   else if (age > 40) baseProb = 0.002;
 
-  // 健康による倍率 (健康100なら1倍、健康0なら10倍)
   const healthFactor = Math.max(1, 10 - (health / 10));
-
   return baseProb * healthFactor;
 };
 
-// 生活費の算出（レベルに応じた必要額）
-export const calculateLivingCost = (level: number): number => {
-  // レベル1: 150万, レベル2: 250万, レベル3: 400万 ...
-  const baseCost = 150;
-  return baseCost * Math.pow(1.5, level - 1);
+// 生活費の算出（カテゴリ別）
+export const calculateHousingCost = (level: number) => 60 * Math.pow(1.5, level - 1);
+export const calculateFoodCost = (level: number) => 40 * Math.pow(1.4, level - 1);
+export const calculateEntertainmentCost = (level: number) => 20 * Math.pow(1.8, level - 1);
+
+export const calculateTotalLivingCost = (standards: LivingStandards): number => {
+  return calculateHousingCost(standards.housing) +
+         calculateFoodCost(standards.food) +
+         calculateEntertainmentCost(standards.entertainment);
 };
 
-// 1ターン進める処理
 export const processTurn = (player: PlayerState, allocation: Allocation): PlayerState => {
-  const nextPlayer = { ...player, history: [...player.history] };
+  const nextPlayer = { ...player, history: [...player.history], livingStandards: { ...player.livingStandards } };
   const logs: string[] = [];
   logs.push(`--- ${nextPlayer.age}歳の1年 ---`);
 
-  // 1. 各行動の結果を計算 (割り振り率は0~100)
+  // 1. 各行動の結果を計算
 
-  // 【休養】健康の回復/維持
-  // 割り振り0%だと毎年健康が10下がる。100%だと30回復。
+  // 休養
   const restFactor = allocation.rest / 100;
-  const healthDelta = Math.floor(-10 + (40 * restFactor));
+  // 住居レベルが休養の効果に影響を与える
+  const housingBonus = (nextPlayer.livingStandards.housing - 1) * 5;
+  const healthDelta = Math.floor(-15 + (40 * restFactor)) + housingBonus;
   nextPlayer.health = Math.min(100, Math.max(0, nextPlayer.health + healthDelta));
-  if (healthDelta < 0) logs.push(`休養不足で健康が低下した。`);
+
+  // 食費が低すぎると健康にダメージ
+  if (nextPlayer.livingStandards.food === 1) nextPlayer.health = Math.max(0, nextPlayer.health - 5);
+  else if (nextPlayer.livingStandards.food >= 4) nextPlayer.health = Math.min(100, nextPlayer.health + 5);
+
+  if (healthDelta < 0) logs.push(`休養不足や住環境の影響で健康が低下した。`);
   else if (healthDelta > 0) logs.push(`しっかり休養を取り、健康を維持した。`);
 
-  // 【勉強】技術の成長
-  // 地頭の良さがボーナスとしてかかる
+  // 勉強
   const studyFactor = allocation.study / 100;
-  const techGrowth = Math.floor(20 * studyFactor * nextPlayer.intelligence);
-  nextPlayer.tech += techGrowth;
-  if (techGrowth > 5) logs.push(`勉強の成果が出て、技術力が大きく向上した。`);
-  else if (techGrowth > 0) logs.push(`勉強して技術力を少し高めた。`);
+  let techGrowth = Math.floor(15 * studyFactor * nextPlayer.intelligence);
 
-  // 【遊ぶ】人脈の成長
+  // 遊ぶ
   const playFactor = allocation.play / 100;
-  const networkGrowth = Math.floor(15 * playFactor);
+  // 娯楽レベルが人脈形成に影響
+  const entertainmentBonus = (nextPlayer.livingStandards.entertainment - 1) * 3;
+  const networkGrowth = Math.floor(10 * playFactor) + entertainmentBonus;
   nextPlayer.network += networkGrowth;
   if (networkGrowth > 0) logs.push(`遊びを通じて人脈を広げた。`);
 
-  // 【仕事】ITサラリーマン案件ロジック
-  // 技術力と地頭に応じて稼ぎが変わる
+  // 仕事（プロジェクト）
   const workFactor = allocation.work / 100;
-
-  // 案件のベース収入
   let earned = 0;
-  if (workFactor > 0) {
-    // ITサラリーマンの案件: 技術力に応じてこなせる案件の質（ベース単価）が上がる
-    const baseIncome = 200 + (nextPlayer.tech * 1.5);
-    // 仕事への割当率と地頭による補正
-    earned = Math.floor(baseIncome * workFactor * nextPlayer.intelligence);
 
-    // スキル不足による失敗リスク（ここでは簡易的に、技術が低いのに無理に仕事率を上げると稼ぎがブレる）
-    const successRoll = Math.random();
-    if (successRoll > 0.8 && nextPlayer.intelligence < 1.0) {
-       logs.push(`仕事でミスをしてしまい、思ったより稼げなかった...`);
-       earned = Math.floor(earned * 0.6);
-    } else if (successRoll > 0.9) {
-       logs.push(`仕事で大きな成果を上げ、ボーナスが出た！`);
-       earned = Math.floor(earned * 1.5);
-    } else {
-       logs.push(`仕事に励み、収入を得た。`);
+  // サラリーマンの給与計算
+  // 基本給 200万 + 技術力に応じた能力給
+  const baseSalary = 200;
+  const abilitySalary = Math.floor(nextPlayer.tech * 2.5 * nextPlayer.intelligence); // 駆け出し(10)で約25万, ベテラン(150)で約375万
+  const standardSalary = baseSalary + abilitySalary;
+
+  // ワークライフバランス（残業代的な概念）
+  // 仕事割合50%を標準とし、それ以上は残業代として加算
+  const overtimeFactor = Math.max(0, workFactor - 0.5) * 2; // 50%~100%を0~1.0にマッピング
+  const overtimePay = Math.floor(standardSalary * 0.4 * overtimeFactor); // 最大40%増し
+
+  earned = standardSalary + overtimePay;
+
+  if (nextPlayer.currentProject) {
+    const proj = nextPlayer.currentProject;
+    logs.push(`案件「${proj.name}」に従事。（残り${nextPlayer.projectYearsLeft}年）`);
+
+    // プロジェクトによる技術力向上
+    const projTechGrowth = Math.floor(proj.techGrowthPerYear * workFactor * nextPlayer.intelligence);
+    techGrowth += projTechGrowth;
+
+    nextPlayer.projectYearsLeft -= 1;
+
+    if (nextPlayer.projectYearsLeft <= 0) {
+      logs.push(`【案件完遂！】「${proj.name}」を見事にやり遂げた！`);
+      logs.push(`ボーナスとして資金 ${proj.completionBonusFunds}万円、技術力 ${proj.completionBonusTech} を獲得！`);
+      earned += proj.completionBonusFunds;
+      techGrowth += proj.completionBonusTech;
+      nextPlayer.currentProject = null;
     }
   } else {
-    logs.push(`今年は一切仕事をしなかった。`);
+    logs.push(`特に決まった案件を持たず、定常業務をこなした。`);
   }
+
+  nextPlayer.tech += techGrowth;
+  if (techGrowth > 5) logs.push(`勉強や仕事の成果が出て、技術力が ${techGrowth} 向上した。`);
 
   nextPlayer.funds += earned;
 
-  // 2. 生活費の支払いと生活水準の変動
-  const livingCost = Math.floor(calculateLivingCost(nextPlayer.livingStandardLevel));
+  // 2. 生活費の支払い
+  const livingCost = Math.floor(calculateTotalLivingCost(nextPlayer.livingStandards));
   nextPlayer.funds -= livingCost;
 
   if (nextPlayer.funds < 0) {
     logs.push(`資金が底をつき、借金生活に突入した...（ストレスで健康激減）`);
     nextPlayer.health -= 30; // 借金ペナルティ
   } else {
-    logs.push(`生活費として ${livingCost}万円 支出した。`);
-  }
-
-  // 収入が生活水準を上回っていたら自動で上がる
-  const nextLevelThreshold = calculateLivingCost(nextPlayer.livingStandardLevel + 1) * 1.5;
-  if (earned > nextLevelThreshold) {
-    nextPlayer.livingStandardLevel += 1;
-    logs.push(`収入が増えたため、気づかぬうちに生活水準が上がってしまった。`);
+    logs.push(`給与 ${earned}万円 を得て、生活費 ${livingCost}万円 を支出した。`);
   }
 
   // 3. 死亡判定
@@ -133,25 +190,9 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
     nextPlayer.isAlive = false;
     logs.push(`【死亡】 ${nextPlayer.age}歳、その生涯を閉じた。`);
   } else {
-    // 翌年へ
     nextPlayer.age += 1;
   }
 
-  // ログ保存 (最大50行程度に制限するか、全て残すか。今回は全て残してUIで末尾だけ見せる)
   nextPlayer.history = [...nextPlayer.history, ...logs];
-
   return nextPlayer;
-};
-
-// 生活水準を手動で下げる処理（ペナルティあり）
-export const lowerLivingStandard = (player: PlayerState): PlayerState => {
-  if (player.livingStandardLevel <= 1) return player;
-
-  return {
-    ...player,
-    livingStandardLevel: player.livingStandardLevel - 1,
-    health: Math.max(0, player.health - 10), // 食費を削るなどして健康低下
-    network: Math.max(0, player.network - 5), // 交際費を削り人脈低下
-    history: [...player.history, `生活水準を意図的に下げた。少し無理が生じている...`]
-  };
 };
