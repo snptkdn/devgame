@@ -1,207 +1,177 @@
-import { useState, useEffect, useRef } from 'react';
-import type { PlayerState, Allocation, LivingStandards } from './game/types';
-import {
-  createInitialState,
-  processTurn,
-  AVAILABLE_PROJECTS,
-  calculateHousingCost,
-  calculateFoodCost,
-  calculateEntertainmentCost,
-  calculateTotalLivingCost
-} from './game/engine';
-import { AlertCircle, Heart, Brain, Zap, Briefcase, Activity, CheckCircle, ChevronRight, Home, Utensils, Gamepad2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { createInitialState, processTurn, AVAILABLE_PROJECTS, calculateTotalLivingCost } from './game/engine';
+import { COMPANIES, PROPERTIES, CARS } from './game/data';
+import type { Allocation, PlayerState } from './game/types';
+import { Brain, Users, Briefcase, Coins, ChevronRight, Activity, Gamepad2, Coffee, Home, CheckCircle, Building, Car as CarIcon } from 'lucide-react';
 
 function App() {
-  const [player, setPlayer] = useState<PlayerState | null>(null);
-  const [allocation, setAllocation] = useState<Allocation>({ work: 50, rest: 10, study: 20, play: 20 });
+  const [player, setPlayer] = useState<PlayerState>(createInitialState());
+  const [allocation, setAllocation] = useState<Allocation>({ work: 50, rest: 10, study: 20, play: 20, jobHunt: 0 });
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [showShop, setShowShop] = useState(false);
+  const [loanYears, setLoanYears] = useState(35);
 
   const historyEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setPlayer(createInitialState());
-  }, []);
-
-  useEffect(() => {
-    historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [player?.history]);
-
-  if (!player) return <div className="p-8">Loading...</div>;
-
-  const totalAllocation = allocation.work + allocation.rest + allocation.study + allocation.play;
-  const isAllocationValid = totalAllocation === 100;
-
-  // 案件の進行中か、あるいは新しく案件を選んだか
-  const isProjectReady = player.currentProject !== null || selectedProjectId !== '';
+    historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [player.history]);
 
   const handleSliderChange = (key: keyof Allocation, value: number) => {
-    // サラリーマンなのでworkは最低50%
-    if (key === 'work' && value < 50) return;
-    setAllocation(prev => ({ ...prev, [key]: value }));
-  };
+    if (key === 'jobHunt' && value > 0 && value < 10) value = 10;
+    if (key === 'jobHunt' && value > 50) value = 50;
 
-  const handleLivingStandardChange = (category: keyof LivingStandards, level: number) => {
-    setPlayer(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        livingStandards: {
-          ...prev.livingStandards,
-          [category]: level
-        }
-      };
+    setAllocation(prev => {
+      const next = { ...prev, [key]: value };
+
+      if (key === 'work' && next.work < 50) next.work = 50;
+
+      let currentTotal = next.work + next.study + next.play + next.rest + next.jobHunt;
+
+      // Auto-adjust logic (simplified for robust replacement)
+      if (currentTotal > 100) {
+          // just let it be invalid for now, standard logic was complex
+      }
+
+      return next;
     });
   };
 
-  const handleNextTurn = () => {
-    if (!isAllocationValid || !isProjectReady) return;
-
-    let nextPlayer = { ...player };
-
-    // 新しい案件を開始する場合
-    if (!nextPlayer.currentProject && selectedProjectId) {
-      const proj = AVAILABLE_PROJECTS.find(p => p.id === selectedProjectId);
-      if (proj) {
-        nextPlayer.currentProject = proj;
-        nextPlayer.projectYearsLeft = proj.durationYears;
-        nextPlayer.history = [...nextPlayer.history, `=== 新しい案件「${proj.name}」にアサインされた！ ===`];
+  const handleLivingStandardChange = (key: keyof PlayerState['livingStandards'], value: number) => {
+    setPlayer(prev => ({
+      ...prev,
+      livingStandards: {
+        ...prev.livingStandards,
+        [key]: value
       }
-      setSelectedProjectId('');
-    }
-
-    setPlayer(processTurn(nextPlayer, allocation));
+    }));
   };
 
+  const totalAllocation = allocation.work + allocation.study + allocation.play + allocation.rest + allocation.jobHunt;
+  const isAllocationValid = totalAllocation === 100;
+
+  const handleNextTurn = () => {
+    if (!isAllocationValid) return;
+
+    let nextPlayer = { ...player };
+    if (!nextPlayer.currentProject && selectedProjectId) {
+      nextPlayer.currentProject = AVAILABLE_PROJECTS.find(p => p.id === selectedProjectId) || null;
+      if (nextPlayer.currentProject) {
+        nextPlayer.projectYearsLeft = nextPlayer.currentProject.durationYears;
+      }
+    }
+
+    const newPlayerState = processTurn(nextPlayer, allocation);
+    setPlayer(newPlayerState);
+    if (!newPlayerState.currentProject) {
+        setSelectedProjectId('');
+    }
+  };
+
+  const isProjectReady = player.currentProject !== null || selectedProjectId !== '';
+  const currentCompany = COMPANIES.find(c => c.id === player.companyId);
+
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800 p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* Header */}
-        <header className="bg-white rounded-xl shadow-sm p-6 flex flex-col md:flex-row justify-between items-center border-t-4 border-blue-600">
+        <header className="flex justify-between items-end border-b pb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">ビジネス人生シミュレーション</h1>
-            <p className="text-sm text-gray-500 mt-1">現在の職業: ITエンジニア</p>
+            <h1 className="text-3xl font-black tracking-tight text-gray-900">ITサラリーマン 人生シミュレータ</h1>
+            <p className="text-sm text-gray-500 mt-1">選択が未来を創る。限られた時間をどう使うか。</p>
           </div>
-          <div className="mt-4 md:mt-0 text-right">
-            <div className="text-3xl font-bold">{player.age} 歳</div>
-            {player.isAlive ? (
-              <div className="text-sm text-green-600 flex items-center justify-end"><Activity className="w-4 h-4 mr-1" /> 生存中</div>
-            ) : (
-              <div className="text-sm text-red-600 flex items-center justify-end"><AlertCircle className="w-4 h-4 mr-1" /> 死亡</div>
-            )}
+          <div className="text-right">
+            <div className="text-2xl font-bold text-blue-600">{player.age} 歳</div>
+            <div className="text-sm text-gray-500">
+              {player.isAlive ? '現在プレイ中' : 'ゲームオーバー'}
+            </div>
           </div>
         </header>
 
         {player.isAlive ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {/* Left Column: Status & Living */}
+            {/* Left Column: Status */}
             <div className="lg:col-span-1 space-y-6">
 
-              {/* Parameters */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4 border-b pb-2">パラメタ</h2>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-sm text-gray-500 mb-1">資金</div>
-                    <div className="text-2xl font-bold flex items-end text-blue-800">
-                      {player.funds.toLocaleString()} <span className="text-sm font-normal ml-1">万円</span>
-                    </div>
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white flex flex-col items-center">
+                  <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-3">
+                    <Brain className="w-10 h-10 text-white" />
                   </div>
-
-                  <div className="pt-4 border-t border-gray-100">
-                    <div className="text-sm text-gray-500 mb-2">コンディション</div>
-                    <ul className="text-sm space-y-3">
-                       <li className="flex items-center text-gray-700">
-                         <Heart className={`w-4 h-4 mr-2 ${player.health < 30 ? 'text-red-500' : 'text-pink-500'}`} />
-                         健康: {player.health} / 100
-                       </li>
-                       <li className="flex items-center text-gray-700">
-                         <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-                         技術力: {player.tech}
-                       </li>
-                       <li className="flex items-center text-gray-700">
-                         <Briefcase className="w-4 h-4 mr-2 text-orange-500" />
-                         人脈: {player.network}
-                       </li>
-                       <li className="flex items-center text-gray-700">
-                         <Brain className="w-4 h-4 mr-2 text-purple-500" />
-                         地頭: {(player.intelligence).toFixed(2)}
-                       </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Living Standards */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4 border-b pb-2">生活水準の設定</h2>
-                <p className="text-xs text-gray-500 mb-4">レベルを上げるとコストが増えますが、健康や人脈に良い影響を与えます。</p>
-
-                <div className="space-y-4">
-                  {/* Housing */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center text-sm font-medium text-gray-700"><Home className="w-4 h-4 mr-1"/> 住居</div>
-                      <div className="text-xs text-gray-500">{Math.floor(calculateHousingCost(player.livingStandards.housing))} 万円/年</div>
-                    </div>
-                    <select
-                      value={player.livingStandards.housing}
-                      onChange={(e) => handleLivingStandardChange('housing', Number(e.target.value))}
-                      className="w-full text-sm rounded border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    >
-                      <option value={1}>Lv.1 築古アパート (健康に悪影響)</option>
-                      <option value={2}>Lv.2 普通のマンション</option>
-                      <option value={3}>Lv.3 良いマンション (健康維持にプラス)</option>
-                      <option value={4}>Lv.4 高級タワマン (健康維持に大きくプラス)</option>
-                      <option value={5}>Lv.5 大豪邸 (最高環境)</option>
-                    </select>
-                  </div>
-
-                  {/* Food */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center text-sm font-medium text-gray-700"><Utensils className="w-4 h-4 mr-1"/> 食費</div>
-                      <div className="text-xs text-gray-500">{Math.floor(calculateFoodCost(player.livingStandards.food))} 万円/年</div>
-                    </div>
-                    <select
-                      value={player.livingStandards.food}
-                      onChange={(e) => handleLivingStandardChange('food', Number(e.target.value))}
-                      className="w-full text-sm rounded border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    >
-                      <option value={1}>Lv.1 もやし生活 (健康ダメージ)</option>
-                      <option value={2}>Lv.2 自炊メイン</option>
-                      <option value={3}>Lv.3 外食多め</option>
-                      <option value={4}>Lv.4 毎日デリバリー・高級店 (健康回復ボーナス)</option>
-                      <option value={5}>Lv.5 お抱えシェフ (超健康)</option>
-                    </select>
-                  </div>
-
-                  {/* Entertainment */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center text-sm font-medium text-gray-700"><Gamepad2 className="w-4 h-4 mr-1"/> 娯楽・交際費</div>
-                      <div className="text-xs text-gray-500">{Math.floor(calculateEntertainmentCost(player.livingStandards.entertainment))} 万円/年</div>
-                    </div>
-                    <select
-                      value={player.livingStandards.entertainment}
-                      onChange={(e) => handleLivingStandardChange('entertainment', Number(e.target.value))}
-                      className="w-full text-sm rounded border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    >
-                      <option value={1}>Lv.1 基本ひきこもり (人脈増えない)</option>
-                      <option value={2}>Lv.2 たまに飲み会</option>
-                      <option value={3}>Lv.3 趣味と交際に投資 (人脈ボーナス)</option>
-                      <option value={4}>Lv.4 毎晩パーティー (人脈大ボーナス)</option>
-                      <option value={5}>Lv.5 クルーザー所有レベル (VIPな人脈)</option>
-                    </select>
+                  <h2 className="text-xl font-bold">主人公</h2>
+                  <div className="mt-2 px-3 py-1 bg-white/20 rounded-full text-sm flex items-center">
+                    <Activity className="w-4 h-4 mr-1" /> 健康度: {player.health}%
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <div className="text-sm font-bold text-red-600 flex justify-between">
-                    <span>今年の予想固定費:</span>
-                    <span>約 {Math.floor(calculateTotalLivingCost(player.livingStandards)).toLocaleString()} 万円</span>
+                <div className="p-6 space-y-4">
+                  <div className="flex justify-between items-center text-lg pb-2 border-b">
+                    <span className="flex items-center text-gray-600"><Coins className="w-5 h-5 mr-2 text-yellow-500"/> 資金</span>
+                    <span className="font-black text-2xl text-gray-900">{player.funds.toLocaleString()} <span className="text-sm font-normal">万円</span></span>
                   </div>
+
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-600"><Briefcase className="w-4 h-4 mr-1"/> 技術力</span>
+                    <span className="font-bold text-gray-800">{player.tech}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-600"><Users className="w-4 h-4 mr-1"/> 人脈</span>
+                    <span className="font-bold text-gray-800">{player.network}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-600"><Building className="w-4 h-4 mr-1"/> 企業</span>
+                    <span className="font-bold text-gray-800 text-xs truncate max-w-[120px]" title={currentCompany?.name}>{currentCompany?.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-600"><Coins className="w-4 h-4 mr-1"/> 基本給</span>
+                    <span className="font-bold text-gray-800">{player.salary} 万円</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-600"><Home className="w-4 h-4 mr-1"/> 家</span>
+                    <span className="font-bold text-gray-800 text-xs truncate max-w-[120px]" title={player.property?.name || 'なし'}>{player.property?.name || 'なし'}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-600"><CarIcon className="w-4 h-4 mr-1"/> 車</span>
+                    <span className="font-bold text-gray-800 text-xs truncate max-w-[120px]" title={player.car?.name || 'なし'}>{player.car?.name || 'なし'}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center text-gray-400"><Brain className="w-4 h-4 mr-1"/> 地頭の良さ</span>
+                    <span className="text-gray-400 font-mono">{(player.intelligence).toFixed(2)}</span>
+                  </div>
+
+                  {/* Living Standards Settings */}
+                  <div className="space-y-4 pt-4 border-t border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-700">生活水準の設定（固定費）</h3>
+
+                    {([
+                      { key: 'food', label: '食費', icon: <Coffee className="w-4 h-4 mr-1 text-gray-500" /> },
+                      { key: 'entertainment', label: '娯楽', icon: <Gamepad2 className="w-4 h-4 mr-1 text-gray-500" /> },
+                    ] as const).map(item => (
+                      <div key={item.key} className="flex items-center justify-between">
+                        <div className="flex items-center text-sm font-medium text-gray-600">
+                          {item.icon} {item.label}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button onClick={() => handleLivingStandardChange(item.key, Math.max(1, player.livingStandards[item.key] - 1))} className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300">-</button>
+                          <span className="w-8 text-center text-sm font-bold">Lv.{player.livingStandards[item.key]}</span>
+                          <button onClick={() => handleLivingStandardChange(item.key, player.livingStandards[item.key] + 1)} className="w-6 h-6 rounded bg-gray-200 flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300">+</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t border-gray-100">
+                    <div className="text-sm font-bold text-red-600 flex justify-between">
+                      <span>今年の予想固定費:</span>
+                      <span>約 {Math.floor(calculateTotalLivingCost(player)).toLocaleString()} 万円</span>
+                    </div>
+                  </div>
+
+                  <button onClick={() => setShowShop(true)} className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm shadow flex items-center justify-center transition">
+                    <Building className="w-4 h-4 mr-2" /> 不動産・カーディーラーに行く
+                  </button>
                 </div>
               </div>
 
@@ -214,7 +184,6 @@ function App() {
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4 border-b pb-2">仕事と時間の割り振り</h2>
 
-                {/* 案件セクション */}
                 <div className="mb-8 bg-blue-50 p-4 rounded-lg border border-blue-100">
                   <h3 className="font-bold text-blue-900 mb-2 flex items-center">
                     <Briefcase className="w-5 h-5 mr-2" /> 現在のプロジェクト
@@ -273,10 +242,11 @@ function App() {
                 <p className="text-sm text-gray-600 mb-4">合計が100%になるように配分してください。</p>
                 <div className="space-y-6 mb-8">
                   {([
-                    { key: 'work', label: '仕事 (資金・技術)', color: 'bg-blue-500', thumb: 'accent-blue-500', min: 50, note: '※サラリーマンのため最低50%' },
+                    { key: 'work', label: '仕事 (資金・技術)', color: 'bg-blue-500', thumb: 'accent-blue-500', min: 50, note: '※最低50%' },
                     { key: 'study', label: '勉強 (技術向上)', color: 'bg-purple-500', thumb: 'accent-purple-500', min: 0, note: '' },
                     { key: 'play', label: '遊ぶ (人脈/ストレス発散)', color: 'bg-green-500', thumb: 'accent-green-500', min: 0, note: '' },
                     { key: 'rest', label: '休養 (健康維持)', color: 'bg-yellow-500', thumb: 'accent-yellow-500', min: 0, note: '' },
+                    { key: 'jobHunt', label: '転職活動 (0, 10-50%)', color: 'bg-orange-500', thumb: 'accent-orange-500', min: 0, note: '' },
                   ] as const).map(item => (
                     <div key={item.key}>
                       <div className="flex justify-between items-end mb-1">
@@ -330,7 +300,7 @@ function App() {
                     if (isSystem) color = 'text-yellow-400 font-bold';
                     if (isDeath) color = 'text-red-500 font-bold';
                     if (log.includes('資金が底を')) color = 'text-red-400';
-                    if (log.includes('【案件完遂！】')) color = 'text-green-400 font-bold';
+                    if (log.includes('【案件完遂！】') || log.includes('【転職成功！】')) color = 'text-green-400 font-bold';
 
                     return (
                       <div key={idx} className={`${color}`}>
@@ -363,7 +333,7 @@ function App() {
             <button
               onClick={() => {
                 setPlayer(createInitialState());
-                setAllocation({ work: 50, rest: 10, study: 20, play: 20 });
+                setAllocation({ work: 50, rest: 10, study: 20, play: 20, jobHunt: 0 });
                 setSelectedProjectId('');
               }}
               className="px-8 py-3 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-lg transition"
@@ -374,6 +344,172 @@ function App() {
         )}
 
       </div>
+
+      {/* Shop Modal */}
+      {showShop && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="p-4 border-b flex justify-between items-center bg-indigo-50 rounded-t-xl">
+              <h2 className="text-xl font-bold text-indigo-900 flex items-center">
+                <Building className="w-6 h-6 mr-2" /> 不動産・カーディーラー
+              </h2>
+              <button onClick={() => setShowShop(false)} className="text-gray-500 hover:text-gray-800 font-bold text-xl px-2">&times;</button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 space-y-8 bg-gray-50">
+              {/* Properties */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-500 pl-2">物件（賃貸・購入）</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {PROPERTIES.map(prop => {
+                    const isOwned = player.property?.id === prop.id;
+                    const canAffordCash = player.funds >= (prop.type === 'buy' ? prop.price : prop.initialCost);
+                    return (
+                      <div key={prop.id} className={`p-4 rounded-lg border bg-white shadow-sm ${isOwned ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200'}`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className={`text-xs font-bold px-2 py-1 rounded mr-2 ${prop.type === 'buy' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
+                              {prop.type === 'buy' ? '購入' : '賃貸'}
+                            </span>
+                            <span className="font-bold">{prop.name}</span>
+                          </div>
+                          {isOwned && <CheckCircle className="w-5 h-5 text-indigo-500" />}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-4">
+                          {prop.type === 'buy' ? (
+                            <span>販売価格: <span className="font-bold text-gray-900">{prop.price.toLocaleString()}</span> 万円</span>
+                          ) : (
+                            <div>
+                              <div>家賃: <span className="font-bold text-gray-900">{prop.price}</span> 万円/月</div>
+                              <div className="text-xs">初期費用: {prop.initialCost} 万円</div>
+                            </div>
+                          )}
+                        </div>
+
+                        {!isOwned && (
+                          <div className="flex space-x-2">
+                            <button
+                              disabled={!canAffordCash}
+                              onClick={() => {
+                                const cost = prop.type === 'buy' ? prop.price : prop.initialCost;
+                                setPlayer({...player, funds: player.funds - cost, property: prop});
+                                setShowShop(false);
+                              }}
+                              className={`flex-1 py-2 text-xs font-bold rounded ${canAffordCash ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                            >
+                              現金（{prop.type === 'buy' ? prop.price : prop.initialCost}万）
+                            </button>
+
+                            {prop.type === 'buy' && (
+                                <div className="flex-1 flex flex-col">
+                                    <div className="flex mb-1">
+                                      <select value={loanYears} onChange={e => setLoanYears(Number(e.target.value))} className="text-xs border rounded-l p-1 flex-1">
+                                        <option value="10">10年</option>
+                                        <option value="20">20年</option>
+                                        <option value="35">35年</option>
+                                      </select>
+                                      <button
+                                        onClick={() => {
+                                          const company = COMPANIES.find(c => c.id === player.companyId)!;
+                                          const rate = company.loanInterestRate;
+                                          const yearlyRate = rate;
+                                          const payment = Math.floor(prop.price * yearlyRate * Math.pow(1 + yearlyRate, loanYears) / (Math.pow(1 + yearlyRate, loanYears) - 1));
+
+                                          const newLoan = {
+                                              id: 'loan_' + Date.now(),
+                                              name: prop.name + 'ローン',
+                                              remainingPrincipal: prop.price,
+                                              interestRate: yearlyRate,
+                                              remainingYears: loanYears,
+                                              yearlyPayment: payment
+                                          };
+
+                                          setPlayer({...player, property: prop, loans: [...player.loans, newLoan]});
+                                          setShowShop(false);
+                                        }}
+                                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-r px-2"
+                                      >
+                                        ローン
+                                      </button>
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 text-center">金利優遇: {((currentCompany?.loanInterestRate || 0) * 100).toFixed(1)}%</div>
+                                </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cars */}
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-500 pl-2">ディーラー（車）</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {CARS.map(car => {
+                    const isOwned = player.car?.id === car.id;
+                    const canAffordCash = player.funds >= car.price;
+                    return (
+                      <div key={car.id} className={`p-4 rounded-lg border bg-white shadow-sm ${isOwned ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200'}`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-bold flex items-center">
+                            <CarIcon className="w-4 h-4 mr-1 text-gray-500"/> {car.name}
+                          </div>
+                          {isOwned && <CheckCircle className="w-5 h-5 text-indigo-500" />}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-4">
+                          販売価格: <span className="font-bold text-gray-900">{car.price.toLocaleString()}</span> 万円
+                        </div>
+
+                        {!isOwned && (
+                          <div className="flex space-x-2">
+                            <button
+                              disabled={!canAffordCash}
+                              onClick={() => {
+                                setPlayer({...player, funds: player.funds - car.price, car: car});
+                                setShowShop(false);
+                              }}
+                              className={`flex-1 py-2 text-xs font-bold rounded ${canAffordCash ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                            >
+                              現金購入（{car.price}万）
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const company = COMPANIES.find(c => c.id === player.companyId)!;
+                                    const rate = company.loanInterestRate;
+                                    const years = 5;
+                                    const payment = Math.floor(car.price * rate * Math.pow(1 + rate, years) / (Math.pow(1 + rate, years) - 1));
+
+                                    const newLoan = {
+                                        id: 'loan_' + Date.now(),
+                                        name: car.name + 'ローン',
+                                        remainingPrincipal: car.price,
+                                        interestRate: rate,
+                                        remainingYears: years,
+                                        yearlyPayment: payment
+                                    };
+
+                                    setPlayer({...player, car: car, loans: [...player.loans, newLoan]});
+                                    setShowShop(false);
+                                }}
+                                className="flex-1 py-2 text-xs font-bold rounded bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                                5年ローン
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
