@@ -96,12 +96,39 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
     // 毎年の年金受給額の計算
     // 積立額の30分の1を毎年受給すると仮定
     const pensionPayout = Math.floor(nextPlayer.pensionFund / 30);
-    logs.push(`年金として ${pensionPayout}万円 を受給した。`);
+    logs.push(`【年金受給】 年金として ${pensionPayout}万円 を受給しました。`);
     nextPlayer.funds += pensionPayout;
 
-    // 休養（100%休養相当）
-    const healthDelta = Math.floor(-15 + (40 * 1.0));
+    // 引退後は仕事と転職活動を強制的に0にし、その分を休養に回す
+    const restFactor = 1 - (allocation.play / 100) - (allocation.study / 100);
+
+    // 休養
+    let housingBonus = 0;
+    if (nextPlayer.property) {
+        if (nextPlayer.property.type === 'rent') housingBonus = Math.floor(nextPlayer.property.price / 10);
+        if (nextPlayer.property.type === 'buy') housingBonus = Math.floor(nextPlayer.property.price / 3000);
+    }
+    const healthDelta = Math.floor(-10 + (40 * restFactor)) + housingBonus; // 引退後は基礎低下が少し緩やか
     nextPlayer.health = Math.min(100, Math.max(0, nextPlayer.health + healthDelta));
+    if (nextPlayer.livingStandards.food === 1) nextPlayer.health = Math.max(0, nextPlayer.health - 5);
+    else if (nextPlayer.livingStandards.food >= 4) nextPlayer.health = Math.min(100, nextPlayer.health + 5);
+
+    if (healthDelta < 0) logs.push(`休養不足や住環境の影響で健康が低下した。`);
+    else if (healthDelta > 0) logs.push(`しっかり休養を取り、健康を維持した。`);
+
+    // 勉強
+    const studyFactor = allocation.study / 100;
+    let techGrowth = Math.floor(5 * studyFactor * nextPlayer.intelligence); // 引退後の勉強効果は落ちる
+    nextPlayer.tech += techGrowth;
+    if (techGrowth > 0) logs.push(`趣味の勉強で技術力が ${techGrowth} 向上した。`);
+
+    // 遊ぶ
+    const playFactor = allocation.play / 100;
+    const entertainmentBonus = (nextPlayer.livingStandards.entertainment - 1) * 3;
+    const carBonus = nextPlayer.car ? Math.floor(nextPlayer.car.price / 200) : 0;
+    const networkGrowth = Math.floor(10 * playFactor) + entertainmentBonus + carBonus;
+    nextPlayer.network += networkGrowth;
+    if (networkGrowth > 0) logs.push(`遊びを通じて人脈を広げた。`);
 
     let livingCost = calculateFoodCost(nextPlayer.livingStandards.food) + calculateEntertainmentCost(nextPlayer.livingStandards.entertainment);
     if (nextPlayer.property && nextPlayer.property.type === 'rent') {
@@ -189,8 +216,16 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
       const techScore = nextPlayer.tech / Math.max(1, targetCompany.requiredTech);
       const networkScore = nextPlayer.network / Math.max(1, targetCompany.requiredNetwork);
 
-      let successProb = (techScore * 0.5 + networkScore * 0.5) * jobHuntFactor * nextPlayer.intelligence;
-      if (successProb > Math.random()) {
+      // 上限を設けて100%受かることはなくす (最高でも80~90%など)
+      // 基本的な確率に加えて、ステータスが十分でもランダムで落ちる要素を追加する
+      let rawProb = (techScore * 0.5 + networkScore * 0.5) * jobHuntFactor * nextPlayer.intelligence;
+      // 0〜0.95の範囲にクリップ
+      let successProb = Math.max(0.01, Math.min(0.95, rawProb));
+
+      // さらなるランダム性 (面接官との相性など)
+      const randomFactor = Math.random(); // 0.0 ~ 1.0
+
+      if (successProb > randomFactor) {
           // オファーの算出: 役職と年収を決定
           // 条件を満たす最大の役職をオファー
           let offeredPosition = targetCompany.positions[0];
