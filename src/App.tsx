@@ -4,13 +4,29 @@ import { COMPANIES, PROPERTIES, CARS } from './game/data';
 import type { Allocation, PlayerState } from './game/types';
 import { Brain, Users, Briefcase, Coins, ChevronRight, Activity, Gamepad2, Coffee, Home, CheckCircle, Building, Car as CarIcon, Plus, Minus, PiggyBank, Target } from 'lucide-react';
 
+type TurnSummary = {
+  salaryRaise: number;
+  promotedPositionName: string | null;
+  projectCompletedName: string | null;
+  jobOfferCompanyName: string | null;
+  jobOfferPositionName: string | null;
+  jobOfferSalary: number | null;
+  jobOfferDeclined: boolean;
+  died: boolean;
+  retired: boolean;
+  fundsDelta: number;
+};
+
 function App() {
   const [player, setPlayer] = useState<PlayerState>(createInitialState());
   const [allocation, setAllocation] = useState<Allocation>({ work: 50, rest: 10, study: 20, play: 20, jobHunt: 0 });
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [targetCompanyId, setTargetCompanyId] = useState<string>('');
+  const [showJobHuntModal, setShowJobHuntModal] = useState<boolean>(false);
   const [loanYears, setLoanYears] = useState(35);
   const [activeTab, setActiveTab] = useState<'status' | 'action' | 'assets' | 'logs'>('action');
+
+  const [turnSummary, setTurnSummary] = useState<TurnSummary | null>(null);
 
   const historyEndRef = useRef<HTMLDivElement>(null);
 
@@ -82,8 +98,64 @@ function App() {
         }
     }
 
+    const prevSalary = nextPlayer.salary;
+    const prevPositionId = nextPlayer.positionId;
+    const prevProject = nextPlayer.currentProject;
+    const prevFunds = nextPlayer.funds;
+    const prevWasRetired = nextPlayer.isRetired;
+
     const newPlayerState = processTurn(nextPlayer, allocation);
     setPlayer(newPlayerState);
+
+    // Summary calculation
+    if (!newPlayerState.isAlive && player.isAlive) {
+        setTurnSummary({ salaryRaise: 0, promotedPositionName: null, projectCompletedName: null, jobOfferCompanyName: null, jobOfferPositionName: null, jobOfferSalary: null, jobOfferDeclined: false, died: true, retired: false, fundsDelta: 0 });
+    } else {
+        const salaryRaise = newPlayerState.salary - prevSalary;
+        let promotedPositionName = null;
+        if (newPlayerState.positionId !== prevPositionId && newPlayerState.companyId === player.companyId) {
+            const comp = COMPANIES.find(c => c.id === newPlayerState.companyId);
+            const pos = comp?.positions.find(p => p.id === newPlayerState.positionId);
+            if (pos) promotedPositionName = pos.name;
+        }
+
+        let projectCompletedName = null;
+        if (prevProject && !newPlayerState.currentProject) {
+            projectCompletedName = prevProject.name;
+        }
+
+        let jobOfferCompanyName = null;
+        let jobOfferPositionName = null;
+        let jobOfferSalary = null;
+        let jobOfferDeclined = false;
+
+        if (newPlayerState.pendingOffer) {
+            const offerComp = COMPANIES.find(c => c.id === newPlayerState.pendingOffer?.companyId);
+            const offerPos = offerComp?.positions.find(p => p.id === newPlayerState.pendingOffer?.positionId);
+            jobOfferCompanyName = offerComp?.name || null;
+            jobOfferPositionName = offerPos?.name || null;
+            jobOfferSalary = newPlayerState.pendingOffer.offeredSalary;
+        } else if (allocation.jobHunt > 0 && targetCompanyId && !newPlayerState.pendingOffer) {
+            jobOfferDeclined = true;
+        }
+
+        const newlyRetired = newPlayerState.isRetired && !prevWasRetired;
+        const fundsDelta = newPlayerState.funds - prevFunds;
+
+        setTurnSummary({
+            salaryRaise,
+            promotedPositionName,
+            projectCompletedName,
+            jobOfferCompanyName,
+            jobOfferPositionName,
+            jobOfferSalary,
+            jobOfferDeclined,
+            died: false,
+            retired: newlyRetired,
+            fundsDelta
+        });
+    }
+
     if (!newPlayerState.currentProject) {
         setSelectedProjectId('');
     }
@@ -135,6 +207,166 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans md:p-8 flex flex-col">
+
+      {/* Job Hunt Modal */}
+      {showJobHuntModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl max-h-[90vh] flex flex-col">
+                <div className="flex justify-between items-center mb-4 border-b pb-4">
+                    <h2 className="text-2xl font-black text-orange-900 flex items-center">
+                        <Target className="w-6 h-6 mr-2" />
+                        転職先を探す
+                    </h2>
+                    <button
+                        onClick={() => setShowJobHuntModal(false)}
+                        className="text-gray-500 hover:text-gray-800 text-xl font-bold px-3 py-1"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                    {COMPANIES.filter(c => c.id !== player.companyId).map(c => {
+                        const techScore = player.tech / Math.max(1, c.requiredTech);
+                        const networkScore = player.network / Math.max(1, c.requiredNetwork);
+                        let rawProb = (techScore * 0.5 + networkScore * 0.5) * (allocation.jobHunt > 0 ? allocation.jobHunt / 100 : 0.2) * player.intelligence;
+                        const successProb = Math.floor(Math.max(0.01, Math.min(0.95, rawProb)) * 100);
+
+                        const minSal = Math.min(...c.positions.map(p => p.minSalary));
+                        const maxSal = Math.max(...c.positions.map(p => p.maxSalary));
+
+                        let probLabel = '';
+                        let probColor = '';
+                        if (successProb >= 80) {
+                            probLabel = '高'; probColor = 'text-green-600 bg-green-100 border-green-300';
+                        } else if (successProb >= 40) {
+                            probLabel = '中'; probColor = 'text-yellow-600 bg-yellow-100 border-yellow-300';
+                        } else {
+                            probLabel = '低'; probColor = 'text-red-600 bg-red-100 border-red-300';
+                        }
+
+                        return { company: c, successProb, probLabel, probColor, minSal, maxSal };
+                    }).sort((a, b) => b.successProb - a.successProb).map(item => (
+                        <div key={item.company.id} className="p-4 border rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h3 className="font-bold text-lg mb-1">{item.company.name}</h3>
+                                <p className="text-sm text-gray-600">想定年収: {item.minSal}万円 〜 {item.maxSal}万円</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className={`px-3 py-1 rounded-full border font-bold text-sm ${item.probColor} whitespace-nowrap`}>
+                                    内定確率: {item.probLabel}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setTargetCompanyId(item.company.id);
+                                        setShowJobHuntModal(false);
+                                    }}
+                                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg whitespace-nowrap shadow-sm"
+                                >
+                                    選択
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* Turn Summary Modal */}
+      {turnSummary && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+            <h2 className="text-2xl font-black text-center mb-6 border-b pb-4">
+              {player.age - 1}歳の記録
+            </h2>
+
+            <div className="space-y-4">
+              {turnSummary.died && (
+                <div className="p-4 bg-red-100 text-red-800 rounded-xl font-bold text-center">
+                  あなたは亡くなりました...
+                </div>
+              )}
+
+              {turnSummary.retired && (
+                <div className="p-4 bg-green-100 text-green-800 rounded-xl font-bold text-center">
+                  定年退職しました！お疲れ様でした。
+                </div>
+              )}
+
+              {!turnSummary.died && !turnSummary.retired && (
+                <>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="font-bold text-gray-600">資金増減</span>
+                    <span className={`font-black text-lg ${turnSummary.fundsDelta >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                      {turnSummary.fundsDelta >= 0 ? '+' : ''}{turnSummary.fundsDelta}万円
+                    </span>
+                  </div>
+
+                  {turnSummary.salaryRaise > 0 && (
+                     <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                       <span className="font-bold text-blue-800 flex items-center"><Coins className="w-4 h-4 mr-1"/> 今年の昇給</span>
+                       <span className="font-black text-blue-600 text-lg">+{turnSummary.salaryRaise}万円</span>
+                     </div>
+                  )}
+                  {turnSummary.salaryRaise < 0 && (
+                     <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                       <span className="font-bold text-red-800 flex items-center"><Coins className="w-4 h-4 mr-1"/> 今年の減給</span>
+                       <span className="font-black text-red-600 text-lg">{turnSummary.salaryRaise}万円</span>
+                     </div>
+                  )}
+
+                  {turnSummary.promotedPositionName && (
+                    <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                       <p className="font-black text-yellow-800 text-center flex items-center justify-center">
+                         <ChevronRight className="w-5 h-5 mr-1" />
+                         「{turnSummary.promotedPositionName}」に昇進しました！
+                       </p>
+                    </div>
+                  )}
+
+                  {turnSummary.projectCompletedName && (
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                       <p className="font-bold text-green-800 text-center text-sm">
+                         案件「{turnSummary.projectCompletedName}」を完遂しました！
+                       </p>
+                    </div>
+                  )}
+
+                  {turnSummary.jobOfferCompanyName && (
+                    <div className="p-4 bg-orange-50 rounded-lg border border-orange-300">
+                       <p className="font-black text-orange-800 text-center mb-2">🎉 内定獲得 🎉</p>
+                       <p className="text-sm text-center font-bold text-gray-700">
+                         {turnSummary.jobOfferCompanyName} ({turnSummary.jobOfferPositionName})<br/>
+                         提示年収: {turnSummary.jobOfferSalary}万円
+                       </p>
+                       <p className="text-xs text-center text-orange-600 mt-2">※アクションタブから転職するか選んでください</p>
+                    </div>
+                  )}
+
+                  {turnSummary.jobOfferDeclined && (
+                    <div className="p-3 bg-gray-100 rounded-lg text-center">
+                       <p className="font-bold text-gray-500 text-sm">
+                         転職活動は不採用に終わりました...
+                       </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="mt-8">
+              <button
+                onClick={() => setTurnSummary(null)}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-colors"
+              >
+                確認
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto w-full flex-1 flex flex-col">
 
         {/* Header */}
@@ -407,39 +639,26 @@ function App() {
                             {allocation.jobHunt > 0 && (
                                 <div className="mb-6 p-4 border border-orange-200 bg-orange-50 rounded-xl space-y-3">
                                     <h3 className="font-bold text-orange-900 flex items-center"><Target className="w-4 h-4 mr-2"/> 転職希望先の選択</h3>
-                                    <select
-                                        className="w-full p-3 rounded-lg border border-orange-300 bg-white font-bold text-sm shadow-sm"
-                                        value={targetCompanyId}
-                                        onChange={(e) => setTargetCompanyId(e.target.value)}
-                                    >
-                                        <option value="" disabled>企業を選択してください</option>
-                                        {COMPANIES.filter(c => c.id !== player.companyId).map(c => (
-                                            <option key={c.id} value={c.id}>{c.name} (必要技術: {c.requiredTech} / 人脈: {c.requiredNetwork})</option>
-                                        ))}
-                                    </select>
 
-                                    {targetCompanyId && (
-                                        <div className="bg-white p-3 rounded text-sm text-gray-700 shadow-sm mt-2">
-                                            {(() => {
-                                                const target = COMPANIES.find(c => c.id === targetCompanyId)!;
-                                                const techScore = player.tech / Math.max(1, target.requiredTech);
-                                                const networkScore = player.network / Math.max(1, target.requiredNetwork);
-                                                let rawProb = (techScore * 0.5 + networkScore * 0.5) * (allocation.jobHunt / 100) * player.intelligence;
-                                                const successProb = Math.floor(Math.max(0.01, Math.min(0.95, rawProb)) * 100);
-
-                                                const minSal = Math.min(...target.positions.map(p => p.minSalary));
-                                                const maxSal = Math.max(...target.positions.map(p => p.maxSalary));
-
-                                                return (
-                                                    <div>
-                                                        <div className="font-bold mb-1 border-b pb-1">「{target.name}」の選考情報</div>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                                                            <div className="text-xs">推定内定率: <span className={`font-bold text-lg ${successProb > 50 ? 'text-green-600' : 'text-red-500'}`}>{successProb}%</span> <span className="text-[10px] text-gray-400">※面接官との相性等で変動あり</span></div>
-                                                            <div className="text-xs">給与レンジ: <span className="font-bold">{minSal}万円 〜 {maxSal}万円</span></div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
+                                    {!targetCompanyId ? (
+                                        <button
+                                            onClick={() => setShowJobHuntModal(true)}
+                                            className="w-full p-3 rounded-lg border-2 border-orange-400 bg-orange-100 hover:bg-orange-200 font-bold text-orange-900 shadow-sm transition"
+                                        >
+                                            転職先を探す
+                                        </button>
+                                    ) : (
+                                        <div className="bg-white p-3 rounded-lg border border-orange-300 shadow-sm flex flex-col space-y-2">
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-bold text-gray-800 text-sm">選択中の企業:</span>
+                                                <span className="font-black text-orange-700">{COMPANIES.find(c => c.id === targetCompanyId)?.name}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => setShowJobHuntModal(true)}
+                                                className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold rounded"
+                                            >
+                                                変更する
+                                            </button>
                                         </div>
                                     )}
                                 </div>
