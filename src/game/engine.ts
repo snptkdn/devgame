@@ -1,48 +1,5 @@
-import type { PlayerState, Allocation, Project } from './types';
+import type { PlayerState, Allocation } from './types';
 import { COMPANIES, PROPERTIES } from './data';
-
-export const AVAILABLE_PROJECTS: Project[] = [
-  {
-    id: 'proj_1',
-    name: '【保守】社内ツールの運用保守',
-    description: '簡単な業務。成長は少ないが確実。',
-    durationYears: 1,
-    requiredTech: 0,
-    techGrowthPerYear: 5,
-    completionBonusTech: 2,
-    completionBonusFunds: 5 // 調整
-  },
-  {
-    id: 'proj_2',
-    name: '【開発】新規Webサービス開発',
-    description: '一般的な開発案件。着実にスキルが身につく。',
-    durationYears: 2,
-    requiredTech: 20,
-    techGrowthPerYear: 15,
-    completionBonusTech: 10,
-    completionBonusFunds: 30 // 調整
-  },
-  {
-    id: 'proj_3',
-    name: '【基盤】大規模システムのリプレイス',
-    description: '長期間拘束されるが、完了時の見返りは大きい。',
-    durationYears: 3,
-    requiredTech: 50,
-    techGrowthPerYear: 20,
-    completionBonusTech: 30,
-    completionBonusFunds: 100 // 調整
-  },
-  {
-    id: 'proj_4',
-    name: '【先端】AIアルゴリズム研究開発',
-    description: '高度な技術を要求される最先端プロジェクト。',
-    durationYears: 4,
-    requiredTech: 100,
-    techGrowthPerYear: 30,
-    completionBonusTech: 60,
-    completionBonusFunds: 300 // 調整
-  }
-];
 
 export const generateIntelligence = (): number => {
   let u = 0, v = 0;
@@ -71,8 +28,14 @@ export const createInitialState = (): PlayerState => {
     projectYearsLeft: 0,
     history: ["人生シミュレーションを開始しました。"],
     companyId: 'c1',
+    companyTenure: 0,
+    positionId: 'c1_p1', // 平社員
     salary: 300,
-    property: PROPERTIES[0], // 木造アパート
+    pensionFund: 0,
+    isRetired: false,
+    targetCompanyId: null,
+    pendingOffer: null,
+    property: { ...PROPERTIES[0], ownedYears: 0 }, // 木造アパート
     car: null,
     loans: []
   };
@@ -122,7 +85,68 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
   const logs: string[] = [];
   logs.push(`--- ${nextPlayer.age}歳の1年 ---`);
 
+  // 引退している場合
+  if (nextPlayer.isRetired) {
+    logs.push(`年金生活。穏やかな日々を過ごしている。`);
+
+    // 資産の保有年数を増やす
+    if (nextPlayer.property) nextPlayer.property.ownedYears += 1;
+    if (nextPlayer.car) nextPlayer.car.ownedYears += 1;
+
+    // 毎年の年金受給額の計算
+    // 積立額の30分の1を毎年受給すると仮定
+    const pensionPayout = Math.floor(nextPlayer.pensionFund / 30);
+    logs.push(`年金として ${pensionPayout}万円 を受給した。`);
+    nextPlayer.funds += pensionPayout;
+
+    // 休養（100%休養相当）
+    const healthDelta = Math.floor(-15 + (40 * 1.0));
+    nextPlayer.health = Math.min(100, Math.max(0, nextPlayer.health + healthDelta));
+
+    let livingCost = calculateFoodCost(nextPlayer.livingStandards.food) + calculateEntertainmentCost(nextPlayer.livingStandards.entertainment);
+    if (nextPlayer.property && nextPlayer.property.type === 'rent') {
+      livingCost += nextPlayer.property.price * 12;
+    }
+
+    let totalLoanPayment = 0;
+    for (let i = nextPlayer.loans.length - 1; i >= 0; i--) {
+        const loan = nextPlayer.loans[i];
+        totalLoanPayment += loan.yearlyPayment;
+        loan.remainingPrincipal -= (loan.yearlyPayment - (loan.remainingPrincipal * loan.interestRate));
+        loan.remainingYears -= 1;
+
+        if (loan.remainingYears <= 0 || loan.remainingPrincipal <= 0) {
+            logs.push(`【ローン完済】「${loan.name}」のローンを完済した！`);
+            nextPlayer.loans.splice(i, 1);
+        }
+    }
+    const totalExpense = Math.floor(livingCost + totalLoanPayment);
+    nextPlayer.funds -= totalExpense;
+
+    if (nextPlayer.funds < 0) {
+      logs.push(`資金が底をつき、借金生活に突入した...（ストレスで健康激減）`);
+      nextPlayer.health -= 30; // 借金ペナルティ
+    } else {
+      logs.push(`生活費・ローン等 ${totalExpense}万円 を支出した。`);
+    }
+
+    // 死亡判定
+    const deathProb = calculateDeathProbability(nextPlayer.age, nextPlayer.health);
+    if (Math.random() < deathProb) {
+      nextPlayer.isAlive = false;
+      logs.push(`【死亡】 ${nextPlayer.age}歳、その生涯を閉じた。`);
+    } else {
+      nextPlayer.age += 1;
+    }
+
+    nextPlayer.history = [...nextPlayer.history, ...logs];
+    return nextPlayer;
+  }
+
   // 1. 各行動の結果を計算
+  nextPlayer.companyTenure += 1;
+  if (nextPlayer.property) nextPlayer.property.ownedYears += 1;
+  if (nextPlayer.car) nextPlayer.car.ownedYears += 1;
 
   // 休養
   const restFactor = allocation.rest / 100;
@@ -157,43 +181,91 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
 
   // 転職活動
   const jobHuntFactor = allocation.jobHunt / 100;
-  if (jobHuntFactor > 0) {
-      logs.push(`転職活動に ${allocation.jobHunt}% の時間を割いた。`);
-      // ランダムな企業をピックアップ（今のランクより上か同等）
-      const currentCompany = COMPANIES.find(c => c.id === nextPlayer.companyId)!;
-      const targetCompanies = COMPANIES.filter(c => c.rank <= currentCompany.rank && c.id !== currentCompany.id);
+  if (jobHuntFactor > 0 && nextPlayer.targetCompanyId) {
+      logs.push(`「${COMPANIES.find(c => c.id === nextPlayer.targetCompanyId)?.name}」への転職活動に ${allocation.jobHunt}% の時間を割いた。`);
+      const targetCompany = COMPANIES.find(c => c.id === nextPlayer.targetCompanyId)!;
 
-      if (targetCompanies.length > 0) {
-          const target = targetCompanies[Math.floor(Math.random() * targetCompanies.length)];
-          // 合否判定: 技術力と人脈、地頭、転職活動割合から算出
-          const techScore = nextPlayer.tech / Math.max(1, target.requiredTech);
-          const networkScore = nextPlayer.network / Math.max(1, target.requiredNetwork);
+      // 合否判定: 技術力と人脈、地頭、転職活動割合から算出
+      const techScore = nextPlayer.tech / Math.max(1, targetCompany.requiredTech);
+      const networkScore = nextPlayer.network / Math.max(1, targetCompany.requiredNetwork);
 
-          let successProb = (techScore * 0.5 + networkScore * 0.5) * jobHuntFactor * nextPlayer.intelligence;
-          if (successProb > Math.random()) {
-              logs.push(`【転職成功！】「${target.name}」から内定をもらい、転職した！`);
-              nextPlayer.companyId = target.id;
-              // 転職時の給与ジャンプアップ (ランダム + 能力ベース)
-              const jump = Math.floor(target.baseRaiseRate * 100 + (Math.random() * 50));
-              nextPlayer.salary += jump;
-          } else {
-              logs.push(`「${target.name}」の選考を受けたが、お見送りとなった...`);
+      let successProb = (techScore * 0.5 + networkScore * 0.5) * jobHuntFactor * nextPlayer.intelligence;
+      if (successProb > Math.random()) {
+          // オファーの算出: 役職と年収を決定
+          // 条件を満たす最大の役職をオファー
+          let offeredPosition = targetCompany.positions[0];
+          for (let i = targetCompany.positions.length - 1; i >= 0; i--) {
+            const pos = targetCompany.positions[i];
+            const tenureReq = targetCompany.corporateType === 'domestic' ? pos.requiredTenure / 2 : 0; // 転職時は前職の経験を半減して評価
+            if (nextPlayer.tech >= pos.requiredTech && nextPlayer.network >= pos.requiredNetwork && nextPlayer.companyTenure >= tenureReq) {
+              offeredPosition = pos;
+              break;
+            }
           }
+
+          // 短い勤続年数のペナルティ
+          const tenurePenalty = nextPlayer.companyTenure < 2 ? 0.8 : 1.0;
+
+          const baseOffer = offeredPosition.minSalary + Math.random() * (offeredPosition.maxSalary - offeredPosition.minSalary);
+          const offeredSalary = Math.floor(baseOffer * tenurePenalty);
+
+          logs.push(`【内定！】「${targetCompany.name}」から内定をもらった！`);
+
+          nextPlayer.pendingOffer = {
+            companyId: targetCompany.id,
+            positionId: offeredPosition.id,
+            offeredSalary: Math.max(offeredPosition.minSalary, Math.min(offeredPosition.maxSalary, offeredSalary))
+          };
       } else {
-          logs.push(`より良い条件の企業が見つからなかった。`);
+          logs.push(`「${targetCompany.name}」の選考を受けたが、お見送りとなった...`);
+          nextPlayer.pendingOffer = null;
       }
+      nextPlayer.targetCompanyId = null; // リセット
+  } else {
+    nextPlayer.pendingOffer = null;
   }
 
   // 仕事（プロジェクトと給与）
   const workFactor = allocation.work / 100;
   const company = COMPANIES.find(c => c.id === nextPlayer.companyId)!;
+  const currentPosition = company.positions.find(p => p.id === nextPlayer.positionId) || company.positions[0];
+
+  // 昇進判定
+  const nextPositionIndex = company.positions.findIndex(p => p.id === currentPosition.id) + 1;
+  if (nextPositionIndex < company.positions.length) {
+    const candidatePosition = company.positions[nextPositionIndex];
+    if (nextPlayer.tech >= candidatePosition.requiredTech &&
+        nextPlayer.network >= candidatePosition.requiredNetwork &&
+        nextPlayer.companyTenure >= candidatePosition.requiredTenure) {
+
+        // ランダム要素 (0.8 ~ 1.2)
+        if (Math.random() * nextPlayer.intelligence > 0.8) {
+           nextPlayer.positionId = candidatePosition.id;
+           logs.push(`【昇進！】「${candidatePosition.name}」に昇進した！`);
+
+           // 昇進に伴う給与アップ
+           if (nextPlayer.salary < candidatePosition.minSalary) {
+              nextPlayer.salary = candidatePosition.minSalary;
+           } else {
+              nextPlayer.salary += Math.floor((candidatePosition.maxSalary - candidatePosition.minSalary) * 0.2);
+           }
+        }
+    }
+  }
 
   // 基本給の昇給 (前年ベース + 能力・企業ランクによる昇給)
   const baseRaise = Math.floor(nextPlayer.salary * (company.baseRaiseRate - 1));
   const abilityRaise = Math.floor(nextPlayer.tech * 0.1 * nextPlayer.intelligence);
   // 昇給額にランダムブレを持たせる (0.8 ~ 1.2)
   const actualRaise = Math.floor((baseRaise + abilityRaise) * (0.8 + Math.random() * 0.4));
+
   nextPlayer.salary += actualRaise;
+
+  // 役職の上限キャップ
+  const maxSalaryForPosition = company.positions.find(p => p.id === nextPlayer.positionId)?.maxSalary || 9999;
+  if (nextPlayer.salary > maxSalaryForPosition) {
+    nextPlayer.salary = maxSalaryForPosition;
+  }
 
   const standardSalary = nextPlayer.salary;
   const overtimeFactor = Math.max(0, workFactor - 0.5) * 2;
@@ -227,6 +299,11 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
   nextPlayer.tech += techGrowth;
   if (techGrowth > 5) logs.push(`勉強や仕事の成果が出て、技術力が ${techGrowth} 向上した。`);
 
+  // 年金積立
+  const pensionContribution = Math.floor(earned * 0.1);
+  nextPlayer.pensionFund += pensionContribution;
+  earned -= pensionContribution;
+
   nextPlayer.funds += earned;
 
   // 2. 生活費・ローンの支払い
@@ -259,7 +336,22 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
     logs.push(`給与 ${earned}万円 を得て、生活費・住居費・ローン等 ${totalExpense}万円 を支出した。`);
   }
 
-  // 3. 死亡判定
+  // 3. 引退判定と死亡判定
+  if (nextPlayer.age >= 65 && !nextPlayer.isRetired) {
+    const currentCompany = COMPANIES.find(c => c.id === nextPlayer.companyId)!;
+    const currentPos = currentCompany.positions.find(p => p.id === nextPlayer.positionId);
+
+    if (currentPos && currentPos.isExecutive) {
+      logs.push(`【定年】 65歳を迎えたが、役員であるため会社に残り、働き続けることになった。`);
+    } else {
+      logs.push(`【定年】 65歳を迎え、定年退職した。これからは年金生活だ。`);
+      nextPlayer.isRetired = true;
+      nextPlayer.currentProject = null;
+      nextPlayer.targetCompanyId = null;
+      nextPlayer.pendingOffer = null;
+    }
+  }
+
   const deathProb = calculateDeathProbability(nextPlayer.age, nextPlayer.health);
   if (Math.random() < deathProb) {
     nextPlayer.isAlive = false;
