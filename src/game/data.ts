@@ -1,77 +1,131 @@
 import type { Company, Property, Car } from './types';
 
+// Helper function to create positions quickly
+const createPositions = (compId: string, isForeign: boolean, baseSalaries: [number, number][], techReqs: number[], networkReqs: number[]) => {
+    const titles = isForeign
+        ? ['スタッフ', 'シニア', 'マネージャー', 'ディレクター', 'パートナー/VP']
+        : ['平社員', '主任', '課長', '部長', '役員'];
+    const tenures = isForeign ? [0, 1, 3, 5, 8] : [0, 3, 8, 15, 25];
+
+    return titles.map((title, i) => ({
+        id: `${compId}_p${i+1}`,
+        name: title,
+        minSalary: baseSalaries[i][0],
+        maxSalary: baseSalaries[i][1],
+        requiredTech: techReqs[i],
+        requiredNetwork: networkReqs[i],
+        requiredTenure: tenures[i],
+        isExecutive: i === 4
+    }));
+};
+
 export const COMPANIES: Company[] = [
-  {
-    id: 'c1', name: '名もなき零細SES', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.01, loanInterestRate: 0.03, requiredTech: 0, requiredNetwork: 0,
-    positions: [
-      { id: 'c1_p1', name: '平社員', minSalary: 300, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
-      { id: 'c1_p2', name: '主任', minSalary: 350, maxSalary: 500, requiredTech: 10, requiredNetwork: 5, requiredTenure: 3, isExecutive: false },
-      { id: 'c1_p3', name: '課長', minSalary: 450, maxSalary: 600, requiredTech: 20, requiredNetwork: 10, requiredTenure: 8, isExecutive: false },
-      { id: 'c1_p4', name: '部長', minSalary: 550, maxSalary: 750, requiredTech: 30, requiredNetwork: 20, requiredTenure: 15, isExecutive: false },
-      { id: 'c1_p5', name: '役員', minSalary: 700, maxSalary: 1000, requiredTech: 40, requiredNetwork: 30, requiredTenure: 25, isExecutive: true },
-    ],
-    projects: [
-      { id: 'c1_proj1', name: '【保守】社内ツールの運用保守', description: '簡単な業務。成長は少ないが確実。', durationYears: 1, requiredTech: 0, techGrowthPerYear: 5, completionBonusTech: 2, completionBonusFunds: 5 }
-    ]
-  },
-  {
-    id: 'c2', name: '中堅SIer「株式会社システムなんとか」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.03, loanInterestRate: 0.015, requiredTech: 30, requiredNetwork: 20,
-    positions: [
-      { id: 'c2_p1', name: '平社員', minSalary: 400, maxSalary: 550, requiredTech: 30, requiredNetwork: 20, requiredTenure: 0, isExecutive: false },
-      { id: 'c2_p2', name: '主任', minSalary: 500, maxSalary: 700, requiredTech: 45, requiredNetwork: 30, requiredTenure: 4, isExecutive: false },
-      { id: 'c2_p3', name: '課長', minSalary: 650, maxSalary: 900, requiredTech: 60, requiredNetwork: 50, requiredTenure: 10, isExecutive: false },
-      { id: 'c2_p4', name: '部長', minSalary: 850, maxSalary: 1200, requiredTech: 80, requiredNetwork: 70, requiredTenure: 18, isExecutive: false },
-      { id: 'c2_p5', name: '役員', minSalary: 1200, maxSalary: 1800, requiredTech: 100, requiredNetwork: 100, requiredTenure: 25, isExecutive: true },
-    ],
-    projects: [
-      { id: 'c2_proj1', name: '【開発】新規Webサービス開発', description: '一般的な開発案件。着実にスキルが身につく。', durationYears: 2, requiredTech: 30, techGrowthPerYear: 15, completionBonusTech: 10, completionBonusFunds: 30 }
-    ]
-  },
-  {
-    id: 'c3', name: 'メガベンチャー「CyberXXX」', rank: 1, corporateType: 'domestic', baseRaiseRate: 1.05, loanInterestRate: 0.008, requiredTech: 80, requiredNetwork: 50,
-    positions: [
-      { id: 'c3_p1', name: '平社員', minSalary: 500, maxSalary: 800, requiredTech: 80, requiredNetwork: 50, requiredTenure: 0, isExecutive: false },
-      { id: 'c3_p2', name: '主任', minSalary: 700, maxSalary: 1000, requiredTech: 100, requiredNetwork: 70, requiredTenure: 3, isExecutive: false },
-      { id: 'c3_p3', name: '課長', minSalary: 900, maxSalary: 1400, requiredTech: 130, requiredNetwork: 100, requiredTenure: 8, isExecutive: false },
-      { id: 'c3_p4', name: '部長', minSalary: 1300, maxSalary: 2000, requiredTech: 160, requiredNetwork: 150, requiredTenure: 12, isExecutive: false },
-      { id: 'c3_p5', name: '役員', minSalary: 2000, maxSalary: 4000, requiredTech: 200, requiredNetwork: 250, requiredTenure: 15, isExecutive: true },
-    ],
-    projects: [
-      { id: 'c3_proj1', name: '【基盤】大規模システムのリプレイス', description: '長期間拘束されるが、完了時の見返りは大きい。', durationYears: 3, requiredTech: 80, techGrowthPerYear: 20, completionBonusTech: 30, completionBonusFunds: 100 }
-    ]
-  },
-  {
-    id: 'c4', name: '外資系IT「G-ogle」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.10, loanInterestRate: 0.005, requiredTech: 150, requiredNetwork: 100,
-    positions: [
-      { id: 'c4_p1', name: 'スタッフ', minSalary: 1000, maxSalary: 1500, requiredTech: 150, requiredNetwork: 100, requiredTenure: 0, isExecutive: false },
-      { id: 'c4_p2', name: 'シニアスタッフ', minSalary: 1400, maxSalary: 2200, requiredTech: 200, requiredNetwork: 150, requiredTenure: 0, isExecutive: false },
-      { id: 'c4_p3', name: 'マネージャー', minSalary: 2000, maxSalary: 3500, requiredTech: 280, requiredNetwork: 250, requiredTenure: 0, isExecutive: false },
-      { id: 'c4_p4', name: 'ディレクター', minSalary: 3500, maxSalary: 6000, requiredTech: 400, requiredNetwork: 400, requiredTenure: 0, isExecutive: false },
-      { id: 'c4_p5', name: 'パートナー', minSalary: 8000, maxSalary: 20000, requiredTech: 600, requiredNetwork: 800, requiredTenure: 0, isExecutive: true },
-    ],
-    projects: [
-      { id: 'c4_proj1', name: '【先端】AIアルゴリズム研究開発', description: '高度な技術を要求される最先端プロジェクト。', durationYears: 4, requiredTech: 150, techGrowthPerYear: 30, completionBonusTech: 60, completionBonusFunds: 300 }
-    ]
-  },
+  // 零細・中小
+  { id: 'c1', name: '名もなき零細SES', rank: 5, corporateType: 'domestic', baseRaiseRate: 1.01, loanInterestRate: 0.03, requiredTech: 0, requiredNetwork: 0, positions: createPositions('c1', false, [[300,400],[350,500],[450,600],[550,750],[700,1000]], [0,10,20,30,40], [0,5,10,20,30]), projects: [{ id: 'c1_proj1', name: '【保守】社内ツールの運用保守', description: '簡単な業務', durationYears: 1, requiredTech: 0, techGrowthPerYear: 5, completionBonusTech: 2, completionBonusFunds: 5 }] },
+  { id: 'c2', name: '地方の中小ソフトハウス', rank: 4, corporateType: 'domestic', baseRaiseRate: 1.015, loanInterestRate: 0.025, requiredTech: 10, requiredNetwork: 5, positions: createPositions('c2', false, [[350,450],[400,550],[500,700],[650,900],[800,1200]], [10,25,40,55,70], [5,15,25,40,60]), projects: [{ id: 'c2_proj1', name: '【受託】地元企業のコーポレートサイト制作', description: '納期は短いが技術的難易度は低い', durationYears: 1, requiredTech: 10, techGrowthPerYear: 8, completionBonusTech: 5, completionBonusFunds: 10 }] },
+  { id: 'c3', name: 'ブラックIT企業「デス・バレー」', rank: 5, corporateType: 'domestic', baseRaiseRate: 1.005, loanInterestRate: 0.03, requiredTech: 5, requiredNetwork: 5, positions: createPositions('c3', false, [[250,350],[300,400],[350,500],[400,600],[500,800]], [5,15,25,35,45], [5,10,15,20,30]), projects: [{ id: 'c3_proj1', name: '【炎上】納期昨日のプロジェクト', description: '精神が削られる', durationYears: 1, requiredTech: 5, techGrowthPerYear: 10, completionBonusTech: 5, completionBonusFunds: 0 }] },
+  { id: 'c4', name: '田舎のPC教室兼開発会社', rank: 5, corporateType: 'domestic', baseRaiseRate: 1.01, loanInterestRate: 0.028, requiredTech: 0, requiredNetwork: 10, positions: createPositions('c4', false, [[280,380],[320,450],[400,550],[500,700],[650,900]], [0,10,20,30,40], [10,20,30,40,50]), projects: [{ id: 'c4_proj1', name: '【教育】高齢者向けスマホ教室', description: '技術より忍耐', durationYears: 1, requiredTech: 0, techGrowthPerYear: 2, completionBonusTech: 1, completionBonusFunds: 3 }] },
+  { id: 'c5', name: '特定派遣メインの「ITドカタ」', rank: 4, corporateType: 'domestic', baseRaiseRate: 1.02, loanInterestRate: 0.022, requiredTech: 15, requiredNetwork: 10, positions: createPositions('c5', false, [[320,450],[380,550],[480,680],[600,850],[750,1100]], [15,25,35,50,65], [10,15,25,35,50]), projects: [{ id: 'c5_proj1', name: '【客先】大手メーカーの末端テスト', description: 'ひたすらエクセルを埋める', durationYears: 2, requiredTech: 15, techGrowthPerYear: 5, completionBonusTech: 5, completionBonusFunds: 15 }] },
+
+  // 中堅・ベンチャー
+  { id: 'c6', name: '中堅SIer「株式会社システムなんとか」', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.03, loanInterestRate: 0.015, requiredTech: 30, requiredNetwork: 20, positions: createPositions('c6', false, [[400,550],[500,700],[650,900],[850,1200],[1200,1800]], [30,45,60,80,100], [20,30,50,70,100]), projects: [{ id: 'c6_proj1', name: '【開発】新規Webサービス開発', description: '一般的な開発', durationYears: 2, requiredTech: 30, techGrowthPerYear: 15, completionBonusTech: 10, completionBonusFunds: 30 }] },
+  { id: 'c7', name: '新進気鋭のSaaSベンチャー', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.04, loanInterestRate: 0.02, requiredTech: 50, requiredNetwork: 30, positions: createPositions('c7', false, [[450,650],[600,850],[800,1200],[1200,1800],[1500,3000]], [50,70,90,120,150], [30,45,60,90,120]), projects: [{ id: 'c7_proj1', name: '【新規事業】次世代SaaSの立ち上げ', description: '激務だが成長', durationYears: 2, requiredTech: 50, techGrowthPerYear: 25, completionBonusTech: 20, completionBonusFunds: 50 }] },
+  { id: 'c8', name: 'ゲーム開発「ポーション・スタジオ」', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.03, loanInterestRate: 0.018, requiredTech: 45, requiredNetwork: 20, positions: createPositions('c8', false, [[420,600],[550,800],[750,1100],[1000,1500],[1300,2500]], [45,65,85,110,140], [20,35,50,70,100]), projects: [{ id: 'c8_proj1', name: '【開発】ソシャゲのイベント実装', description: 'リリース前は徹夜', durationYears: 1, requiredTech: 45, techGrowthPerYear: 20, completionBonusTech: 15, completionBonusFunds: 20 }] },
+  { id: 'c9', name: 'AIスタートアップ「DeepBrain」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.06, loanInterestRate: 0.012, requiredTech: 80, requiredNetwork: 40, positions: createPositions('c9', false, [[600,900],[800,1200],[1100,1600],[1500,2200],[2000,4500]], [80,100,130,160,200], [40,60,80,110,150]), projects: [{ id: 'c9_proj1', name: '【研究】LLMの独自ファインチューニング', description: '最先端に触れる', durationYears: 2, requiredTech: 80, techGrowthPerYear: 30, completionBonusTech: 40, completionBonusFunds: 80 }] },
+  { id: 'c10', name: 'FinTech企業「PayHoge」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.05, loanInterestRate: 0.01, requiredTech: 70, requiredNetwork: 50, positions: createPositions('c10', false, [[550,850],[750,1100],[1000,1500],[1400,2000],[1800,3500]], [70,90,120,150,180], [50,70,90,120,160]), projects: [{ id: 'c10_proj1', name: '【決済】新決済基盤の構築', description: 'ミスが許されない', durationYears: 3, requiredTech: 70, techGrowthPerYear: 25, completionBonusTech: 35, completionBonusFunds: 100 }] },
+  { id: 'c11', name: 'EdTechベンチャー「LearnNext」', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.035, loanInterestRate: 0.018, requiredTech: 40, requiredNetwork: 40, positions: createPositions('c11', false, [[450,600],[600,800],[800,1100],[1100,1600],[1500,2500]], [40,60,80,100,130], [40,60,80,100,130]), projects: [{ id: 'c11_proj1', name: '【教育】オンライン学習プラットフォーム開発', description: '社会貢献度は高い', durationYears: 2, requiredTech: 40, techGrowthPerYear: 18, completionBonusTech: 15, completionBonusFunds: 40 }] },
+  { id: 'c12', name: 'Webマーケ会社「ClickBoost」', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.04, loanInterestRate: 0.015, requiredTech: 35, requiredNetwork: 55, positions: createPositions('c12', false, [[420,580],[550,750],[750,1000],[1000,1400],[1300,2000]], [35,55,75,95,120], [55,75,95,120,150]), projects: [{ id: 'c12_proj1', name: '【分析】大規模広告配信システムの改善', description: '数字を追う日々', durationYears: 1, requiredTech: 35, techGrowthPerYear: 15, completionBonusTech: 10, completionBonusFunds: 30 }] },
+  { id: 'c13', name: 'IoTスタートアップ「ConnectAll」', rank: 3, corporateType: 'domestic', baseRaiseRate: 1.045, loanInterestRate: 0.016, requiredTech: 60, requiredNetwork: 30, positions: createPositions('c13', false, [[500,700],[700,950],[950,1300],[1300,1800],[1700,3000]], [60,80,100,130,160], [30,50,70,100,130]), projects: [{ id: 'c13_proj1', name: '【開発】スマートホームデバイス連携アプリ', description: 'ハードウェアとの連携', durationYears: 2, requiredTech: 60, techGrowthPerYear: 22, completionBonusTech: 25, completionBonusFunds: 60 }] },
+  { id: 'c14', name: '地方創生IT「ふるさとTech」', rank: 4, corporateType: 'domestic', baseRaiseRate: 1.02, loanInterestRate: 0.02, requiredTech: 20, requiredNetwork: 40, positions: createPositions('c14', false, [[380,500],[450,650],[600,850],[800,1100],[1000,1500]], [20,35,50,70,90], [40,60,80,100,130]), projects: [{ id: 'c14_proj1', name: '【受託】自治体向けDX推進支援', description: 'お役所仕事が多い', durationYears: 2, requiredTech: 20, techGrowthPerYear: 10, completionBonusTech: 10, completionBonusFunds: 25 }] },
+
+  // 大手・メガ
+  { id: 'c15', name: '大手日系SIer「NT〇データ」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.025, loanInterestRate: 0.01, requiredTech: 60, requiredNetwork: 60, positions: createPositions('c15', false, [[500,700],[700,950],[950,1300],[1300,1800],[1800,3000]], [60,80,100,120,150], [60,80,110,150,200]), projects: [{ id: 'c15_proj1', name: '【公共】官公庁向け大規模システム', description: '調整業務が多く人脈が広がる', durationYears: 3, requiredTech: 60, techGrowthPerYear: 10, completionBonusTech: 10, completionBonusFunds: 60 }] },
+  { id: 'c16', name: 'メガベンチャー「CyberXXX」', rank: 1, corporateType: 'domestic', baseRaiseRate: 1.05, loanInterestRate: 0.008, requiredTech: 80, requiredNetwork: 50, positions: createPositions('c16', false, [[500,800],[700,1000],[900,1400],[1300,2000],[2000,4000]], [80,100,130,160,200], [50,70,100,150,250]), projects: [{ id: 'c16_proj1', name: '【基盤】大規模システムのリプレイス', description: '長期間拘束されるが見返りは大きい', durationYears: 3, requiredTech: 80, techGrowthPerYear: 20, completionBonusTech: 30, completionBonusFunds: 100 }] },
+  { id: 'c17', name: '総合電機メーカー「パ〇ソニック」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.02, loanInterestRate: 0.009, requiredTech: 50, requiredNetwork: 60, positions: createPositions('c17', false, [[450,650],[600,850],[850,1200],[1200,1600],[1600,2800]], [50,70,90,110,140], [60,80,100,130,180]), projects: [{ id: 'c17_proj1', name: '【社内】レガシーシステムの刷新', description: '社内政治が鍵', durationYears: 3, requiredTech: 50, techGrowthPerYear: 12, completionBonusTech: 15, completionBonusFunds: 50 }] },
+  { id: 'c18', name: '通信キャリア大手「Do〇oMo」', rank: 1, corporateType: 'domestic', baseRaiseRate: 1.025, loanInterestRate: 0.008, requiredTech: 70, requiredNetwork: 80, positions: createPositions('c18', false, [[550,750],[750,1000],[1000,1400],[1400,1900],[1900,3500]], [70,90,110,140,170], [80,100,130,170,220]), projects: [{ id: 'c18_proj1', name: '【通信】次世代通信網のシステム開発', description: '安定感抜群', durationYears: 4, requiredTech: 70, techGrowthPerYear: 15, completionBonusTech: 20, completionBonusFunds: 120 }] },
+  { id: 'c19', name: '老舗メーカー系SIer「Hita〇hi」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.02, loanInterestRate: 0.01, requiredTech: 65, requiredNetwork: 70, positions: createPositions('c19', false, [[500,700],[700,950],[950,1300],[1300,1800],[1800,3000]], [65,85,105,125,155], [70,90,120,160,210]), projects: [{ id: 'c19_proj1', name: '【社会】インフラシステムの保守開発', description: '堅実な仕事', durationYears: 3, requiredTech: 65, techGrowthPerYear: 10, completionBonusTech: 12, completionBonusFunds: 55 }] },
+  { id: 'c20', name: '大手ゲーム会社「Ninten〇o」', rank: 1, corporateType: 'domestic', baseRaiseRate: 1.04, loanInterestRate: 0.007, requiredTech: 100, requiredNetwork: 70, positions: createPositions('c20', false, [[600,900],[900,1300],[1300,1800],[1800,2500],[2500,5000]], [100,120,150,190,240], [70,90,120,160,220]), projects: [{ id: 'c20_proj1', name: '【開発】世界的ヒットタイトルのサーバー基盤', description: 'やりがい搾取ではない真のやりがい', durationYears: 4, requiredTech: 100, techGrowthPerYear: 25, completionBonusTech: 50, completionBonusFunds: 200 }] },
+  { id: 'c21', name: 'EC最大手「〇天」', rank: 2, corporateType: 'domestic', baseRaiseRate: 1.04, loanInterestRate: 0.012, requiredTech: 75, requiredNetwork: 75, positions: createPositions('c21', false, [[500,800],[800,1100],[1100,1500],[1500,2200],[2200,4000]], [75,95,120,150,190], [75,95,120,150,190]), projects: [{ id: 'c21_proj1', name: '【EC】大規模セールのトラフィック対策', description: '英語が必須', durationYears: 2, requiredTech: 75, techGrowthPerYear: 20, completionBonusTech: 25, completionBonusFunds: 70 }] },
+
+  // 外資系・トップ層
+  { id: 'c22', name: '外資系コンサル「マッキン〇ー」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.08, loanInterestRate: 0.006, requiredTech: 100, requiredNetwork: 120, positions: createPositions('c22', true, [[800,1200],[1200,1800],[1800,2500],[2500,4000],[5000,10000]], [100,140,180,240,320], [120,160,220,300,400]), projects: [{ id: 'c22_proj1', name: '【戦略】大企業のDX戦略策定', description: '経営層と関わり強固な人脈が築ける', durationYears: 2, requiredTech: 100, techGrowthPerYear: 25, completionBonusTech: 20, completionBonusFunds: 150 }] },
+  { id: 'c23', name: '外資系IT「G-ogle」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.10, loanInterestRate: 0.005, requiredTech: 150, requiredNetwork: 100, positions: createPositions('c23', true, [[1000,1500],[1400,2200],[2000,3500],[3500,6000],[8000,20000]], [150,200,280,400,600], [100,150,250,400,800]), projects: [{ id: 'c23_proj1', name: '【先端】AIアルゴリズム研究開発', description: '高度な技術を要求される最先端プロジェクト', durationYears: 4, requiredTech: 150, techGrowthPerYear: 30, completionBonusTech: 60, completionBonusFunds: 300 }] },
+  { id: 'c24', name: '外資系IT「Ama〇on」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.09, loanInterestRate: 0.005, requiredTech: 140, requiredNetwork: 110, positions: createPositions('c24', true, [[950,1400],[1300,2000],[1900,3200],[3200,5500],[7000,18000]], [140,190,260,370,550], [110,160,260,420,850]), projects: [{ id: 'c24_proj1', name: '【クラウド】AWS新サービスのコア開発', description: '世界規模のスケーラビリティ', durationYears: 3, requiredTech: 140, techGrowthPerYear: 35, completionBonusTech: 50, completionBonusFunds: 250 }] },
+  { id: 'c25', name: '外資系IT「M〇crosoft」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.08, loanInterestRate: 0.006, requiredTech: 130, requiredNetwork: 130, positions: createPositions('c25', true, [[900,1350],[1250,1900],[1800,3000],[3000,5000],[6000,16000]], [130,170,240,340,500], [130,170,240,340,500]), projects: [{ id: 'c25_proj1', name: '【OS】次世代OSのカーネル開発', description: '歴史に残る仕事', durationYears: 4, requiredTech: 130, techGrowthPerYear: 28, completionBonusTech: 55, completionBonusFunds: 280 }] },
+  { id: 'c26', name: '外資系金融「ゴール〇マン」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.12, loanInterestRate: 0.004, requiredTech: 120, requiredNetwork: 150, positions: createPositions('c26', true, [[1200,1800],[1800,2800],[2800,4500],[4500,8000],[10000,30000]], [120,160,220,300,400], [150,200,280,380,550]), projects: [{ id: 'c26_proj1', name: '【金融】超低遅延HFTシステムの開発', description: 'ミリ秒が億を生むプレッシャー', durationYears: 2, requiredTech: 120, techGrowthPerYear: 25, completionBonusTech: 40, completionBonusFunds: 400 }] },
+  { id: 'c27', name: '外資系コンサル「アク〇ンチュア」', rank: 2, corporateType: 'foreign', baseRaiseRate: 1.07, loanInterestRate: 0.008, requiredTech: 85, requiredNetwork: 95, positions: createPositions('c27', true, [[600,900],[900,1300],[1300,1900],[1900,3000],[3000,6000]], [85,110,145,190,250], [95,120,160,210,280]), projects: [{ id: 'c27_proj1', name: '【導入】グローバルERPの導入支援', description: '泥臭い作業も多い', durationYears: 3, requiredTech: 85, techGrowthPerYear: 18, completionBonusTech: 20, completionBonusFunds: 120 }] },
+  { id: 'c28', name: '外資系IT「A〇ple」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.09, loanInterestRate: 0.005, requiredTech: 160, requiredNetwork: 90, positions: createPositions('c28', true, [[1100,1600],[1500,2400],[2200,3800],[3800,6500],[8500,22000]], [160,220,300,430,650], [90,130,220,350,700]), projects: [{ id: 'c28_proj1', name: '【ハード】次期デバイスのソフトウェア連携', description: '完璧が求められる', durationYears: 4, requiredTech: 160, techGrowthPerYear: 32, completionBonusTech: 65, completionBonusFunds: 320 }] },
+  { id: 'c29', name: '外資系IT「Meta(Facebook)」', rank: 1, corporateType: 'foreign', baseRaiseRate: 1.10, loanInterestRate: 0.005, requiredTech: 145, requiredNetwork: 105, positions: createPositions('c29', true, [[1050,1550],[1450,2300],[2100,3600],[3600,6200],[8200,21000]], [145,195,270,380,580], [105,155,255,410,820]), projects: [{ id: 'c29_proj1', name: '【基盤】数十億人が使うバックエンド改修', description: '影響範囲がデカすぎる', durationYears: 3, requiredTech: 145, techGrowthPerYear: 35, completionBonusTech: 55, completionBonusFunds: 280 }] },
+
+  // ネタ・特殊
+  { id: 'c30', name: '秘密結社「イル〇ナティ」', rank: 0, corporateType: 'foreign', baseRaiseRate: 1.20, loanInterestRate: 0.001, requiredTech: 400, requiredNetwork: 600, positions: createPositions('c30', true, [[3000,5000],[5000,10000],[10000,20000],[20000,50000],[50000,100000]], [400,500,650,850,1200], [600,800,1100,1500,2500]), projects: [{ id: 'c30_proj1', name: '【極秘】世界経済の掌握', description: '世界の裏側を知る', durationYears: 5, requiredTech: 400, techGrowthPerYear: 80, completionBonusTech: 150, completionBonusFunds: 2000 }] }
 ];
 
 export const PROPERTIES: Property[] = [
-  // Rent (depreciation doesn't matter)
-  { id: 'r1', name: '木造アパート「コーポ希望」', type: 'rent', price: 6, initialCost: 10 },
-  { id: 'r2', name: '普通のマンション「メゾン・ド・IT」', type: 'rent', price: 12, initialCost: 30 },
-  { id: 'r3', name: '高級マンション「ヒルズ的なアレ」', type: 'rent', price: 50, initialCost: 150 },
-  { id: 'r4', name: '最高級タワマン「ザ・トーキョー・スカイ」', type: 'rent', price: 300, initialCost: 1000 },
+  // Rent (15)
+  { id: 'r1', name: '友人宅の居候', type: 'rent', price: 1, initialCost: 0 },
+  { id: 'r2', name: 'シェアハウス「ドリーム」', type: 'rent', price: 2, initialCost: 2 },
+  { id: 'r3', name: 'ボロボロの木造アパート（風呂なし）', type: 'rent', price: 3, initialCost: 5 },
+  { id: 'r4', name: '郊外のワンルーム', type: 'rent', price: 5, initialCost: 10 },
+  { id: 'r5', name: '木造アパート「コーポ希望」', type: 'rent', price: 6, initialCost: 10 },
+  { id: 'r6', name: '都内の狭小ワンルーム', type: 'rent', price: 8, initialCost: 20 },
+  { id: 'r7', name: '普通のマンション「メゾン・ド・IT」', type: 'rent', price: 12, initialCost: 30 },
+  { id: 'r8', name: '駅近の1LDK', type: 'rent', price: 18, initialCost: 50 },
+  { id: 'r9', name: 'デザイナーズマンション', type: 'rent', price: 25, initialCost: 80 },
+  { id: 'r10', name: '都心ファミリー向けマンション', type: 'rent', price: 35, initialCost: 100 },
+  { id: 'r11', name: '高級マンション「ヒルズ的なアレ」', type: 'rent', price: 50, initialCost: 150 },
+  { id: 'r12', name: '低層高級レジデンス', type: 'rent', price: 80, initialCost: 250 },
+  { id: 'r13', name: '最高級タワマン「ザ・トーキョー・スカイ」', type: 'rent', price: 300, initialCost: 1000 },
+  { id: 'r14', name: '超絶ペントハウス', type: 'rent', price: 800, initialCost: 3000 },
+  { id: 'r15', name: '王族向けスイート月極', type: 'rent', price: 2000, initialCost: 5000 },
 
-  // Buy
-  { id: 'b1', name: '郊外の中古マンション', type: 'buy', price: 3000, initialCost: 0, depreciationRate: 0.05 },
-  { id: 'b2', name: '都内の新築マンション', type: 'buy', price: 8000, initialCost: 0, depreciationRate: 0.04 },
-  { id: 'b3', name: '港区の高級タワマン', type: 'buy', price: 25000, initialCost: 0, depreciationRate: 0.02 }, // 高級物件は価値が落ちにくい
-  { id: 'b4', name: '大富豪の豪邸', type: 'buy', price: 100000, initialCost: 0, depreciationRate: 0.01 },
+  // Buy (15)
+  { id: 'b1', name: '限界集落の古民家', type: 'buy', price: 300, initialCost: 0, depreciationRate: 0.10 },
+  { id: 'b2', name: '地方の中古戸建て', type: 'buy', price: 1500, initialCost: 0, depreciationRate: 0.08 },
+  { id: 'b3', name: '郊外の中古マンション', type: 'buy', price: 3000, initialCost: 0, depreciationRate: 0.06 },
+  { id: 'b4', name: '郊外の新築建売住宅', type: 'buy', price: 4000, initialCost: 0, depreciationRate: 0.055 },
+  { id: 'b5', name: '郊外の注文住宅', type: 'buy', price: 5000, initialCost: 0, depreciationRate: 0.05 },
+  { id: 'b6', name: '都内の中古マンション', type: 'buy', price: 6000, initialCost: 0, depreciationRate: 0.045 },
+  { id: 'b7', name: '都内の新築マンション', type: 'buy', price: 8000, initialCost: 0, depreciationRate: 0.04 },
+  { id: 'b8', name: '都内の一等地戸建て', type: 'buy', price: 15000, initialCost: 0, depreciationRate: 0.03 },
+  { id: 'b9', name: '港区の中古タワマン', type: 'buy', price: 18000, initialCost: 0, depreciationRate: 0.025 },
+  { id: 'b10', name: '港区の高級タワマン', type: 'buy', price: 25000, initialCost: 0, depreciationRate: 0.02 },
+  { id: 'b11', name: '田園調布の豪邸', type: 'buy', price: 40000, initialCost: 0, depreciationRate: 0.015 },
+  { id: 'b12', name: '六本木ヒルズのペントハウス', type: 'buy', price: 80000, initialCost: 0, depreciationRate: 0.012 },
+  { id: 'b13', name: '大富豪の豪邸', type: 'buy', price: 100000, initialCost: 0, depreciationRate: 0.01 },
+  { id: 'b14', name: '海外の高級別荘', type: 'buy', price: 250000, initialCost: 0, depreciationRate: 0.008 },
+  { id: 'b15', name: 'プライベートアイランド', type: 'buy', price: 500000, initialCost: 0, depreciationRate: 0.005 },
 ];
 
 export const CARS: Car[] = [
-  { id: 'car1', name: '中古の軽自動車', price: 50, depreciationRate: 0.3 },
-  { id: 'car2', name: '国産ファミリーカー「プ〇ウス」', price: 300, depreciationRate: 0.2 },
-  { id: 'car3', name: '高級外車「メ〇セデス」', price: 1000, depreciationRate: 0.15 },
-  { id: 'car4', name: 'スーパーカー「フェ〇ーリ」', price: 4000, depreciationRate: 0.05 }, // 高級車は価値が落ちにくい
+  { id: 'car1', name: 'ボロボロの軽トラ', price: 10, depreciationRate: 0.4 },
+  { id: 'car2', name: '中古の軽自動車', price: 50, depreciationRate: 0.3 },
+  { id: 'car3', name: '中古のコンパクトカー', price: 80, depreciationRate: 0.28 },
+  { id: 'car4', name: '新車の軽自動車', price: 150, depreciationRate: 0.25 },
+  { id: 'car5', name: '新車のコンパクトカー', price: 200, depreciationRate: 0.22 },
+  { id: 'car6', name: '国産ファミリーカー', price: 300, depreciationRate: 0.2 },
+  { id: 'car7', name: '国産ハイブリッド車', price: 400, depreciationRate: 0.19 },
+  { id: 'car8', name: '国産ミニバン', price: 450, depreciationRate: 0.18 },
+  { id: 'car9', name: '国産高級セダン', price: 600, depreciationRate: 0.18 },
+  { id: 'car10', name: 'アメ車（マッスルカー）', price: 700, depreciationRate: 0.25 }, // 趣味性は高いが値落ち激しい
+  { id: 'car11', name: '外車エントリーモデル', price: 800, depreciationRate: 0.17 },
+  { id: 'car12', name: '高級外車「メ〇セデス」', price: 1000, depreciationRate: 0.15 },
+  { id: 'car13', name: '高級外車「BM〇」', price: 1100, depreciationRate: 0.15 },
+  { id: 'car14', name: '高級外車「ア〇ディ」', price: 1200, depreciationRate: 0.15 },
+  { id: 'car15', name: '電気自動車「テス〇」', price: 1500, depreciationRate: 0.14 },
+  { id: 'car16', name: '高級SUV「〇ルシェ」', price: 1800, depreciationRate: 0.12 },
+  { id: 'car17', name: '最高級セダン「マイ〇ッハ」', price: 2500, depreciationRate: 0.10 },
+  { id: 'car18', name: 'スポーツカー「ポル〇ェ911」', price: 3000, depreciationRate: 0.09 },
+  { id: 'car19', name: 'スーパーカー「フェ〇ーリ」', price: 4000, depreciationRate: 0.08 },
+  { id: 'car20', name: 'スーパーカー「ランボ〇ギーニ」', price: 4500, depreciationRate: 0.08 },
+  { id: 'car21', name: '超高級車「ロールス〇イス」', price: 6000, depreciationRate: 0.07 },
+  { id: 'car22', name: 'ハイパーカー「ブ〇ッティ」', price: 30000, depreciationRate: 0.05 },
+  { id: 'car23', name: 'F1カー（公道走行不可）', price: 50000, depreciationRate: 0.06 },
+  { id: 'car24', name: '小型ヘリコプター', price: 80000, depreciationRate: 0.04 },
+  { id: 'car25', name: 'プライベートジェット', price: 150000, depreciationRate: 0.03 },
+  { id: 'car26', name: '豪華クルーザー', price: 200000, depreciationRate: 0.035 },
+  { id: 'car27', name: '大型プライベートジェット', price: 500000, depreciationRate: 0.02 },
+  { id: 'car28', name: '軍用潜水艦', price: 1000000, depreciationRate: 0.015 },
+  { id: 'car29', name: 'ステルス戦闘機', price: 3000000, depreciationRate: 0.01 },
+  { id: 'car30', name: '宇宙船', price: 10000000, depreciationRate: 0.005 },
 ];

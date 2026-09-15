@@ -25,6 +25,9 @@ function App() {
     }
   }, [player.companyId, player.currentProject]);
 
+  const maxTech = Math.max(...COMPANIES.flatMap(c => c.positions.map(p => p.requiredTech)));
+  const maxNetwork = Math.max(...COMPANIES.flatMap(c => c.positions.map(p => p.requiredNetwork)));
+
   const handleAllocationChange = (key: keyof Allocation, delta: number) => {
     setAllocation(prev => {
       let nextValue = prev[key] + delta;
@@ -240,8 +243,8 @@ function App() {
                   )}
 
                   {/* Limits calculation based on all companies required tech/network */}
-                  {renderProgressBar('技術力', player.tech, 600, <Briefcase className="w-4 h-4 mr-1"/>, 'bg-purple-500')}
-                  {renderProgressBar('人脈', player.network, 800, <Users className="w-4 h-4 mr-1"/>, 'bg-green-500')}
+                  {renderProgressBar('技術力', player.tech, maxTech, <Briefcase className="w-4 h-4 mr-1"/>, 'bg-purple-500')}
+                  {renderProgressBar('人脈', player.network, maxNetwork, <Users className="w-4 h-4 mr-1"/>, 'bg-green-500')}
 
                   <div className="flex justify-between items-center text-sm mt-4">
                     <span className="flex items-center text-gray-600 font-bold"><PiggyBank className="w-4 h-4 mr-1"/> 年金積立額</span>
@@ -421,14 +424,18 @@ function App() {
                                                 const target = COMPANIES.find(c => c.id === targetCompanyId)!;
                                                 const techScore = player.tech / Math.max(1, target.requiredTech);
                                                 const networkScore = player.network / Math.max(1, target.requiredNetwork);
-                                                const successProb = Math.min(100, Math.floor((techScore * 0.5 + networkScore * 0.5) * (allocation.jobHunt / 100) * player.intelligence * 100));
+                                                let rawProb = (techScore * 0.5 + networkScore * 0.5) * (allocation.jobHunt / 100) * player.intelligence;
+                                                const successProb = Math.floor(Math.max(0.01, Math.min(0.95, rawProb)) * 100);
+
+                                                const minSal = Math.min(...target.positions.map(p => p.minSalary));
+                                                const maxSal = Math.max(...target.positions.map(p => p.maxSalary));
 
                                                 return (
                                                     <div>
                                                         <div className="font-bold mb-1 border-b pb-1">「{target.name}」の選考情報</div>
-                                                        <div className="grid grid-cols-2 gap-2 mt-2">
-                                                            <div className="text-xs">推定内定率: <span className={`font-bold text-lg ${successProb > 50 ? 'text-green-600' : 'text-red-500'}`}>{successProb}%</span></div>
-                                                            <div className="text-xs">給与レンジ: <span className="font-bold">{target.positions[0].minSalary}万〜</span></div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                                                            <div className="text-xs">推定内定率: <span className={`font-bold text-lg ${successProb > 50 ? 'text-green-600' : 'text-red-500'}`}>{successProb}%</span> <span className="text-[10px] text-gray-400">※面接官との相性等で変動あり</span></div>
+                                                            <div className="text-xs">給与レンジ: <span className="font-bold">{minSal}万円 〜 {maxSal}万円</span></div>
                                                         </div>
                                                     </div>
                                                 );
