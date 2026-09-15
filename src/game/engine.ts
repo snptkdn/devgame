@@ -269,22 +269,38 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
   const nextPositionIndex = company.positions.findIndex(p => p.id === currentPosition.id) + 1;
   if (nextPositionIndex < company.positions.length) {
     const candidatePosition = company.positions[nextPositionIndex];
-    if (nextPlayer.tech >= candidatePosition.requiredTech &&
-        nextPlayer.network >= candidatePosition.requiredNetwork &&
-        nextPlayer.companyTenure >= candidatePosition.requiredTenure) {
 
-        // ランダム要素 (0.8 ~ 1.2)
-        if (Math.random() * nextPlayer.intelligence > 0.8) {
-           nextPlayer.positionId = candidatePosition.id;
-           logs.push(`【昇進！】「${candidatePosition.name}」に昇進した！`);
+    const techScore = nextPlayer.tech / Math.max(1, candidatePosition.requiredTech);
+    const networkScore = nextPlayer.network / Math.max(1, candidatePosition.requiredNetwork);
 
-           // 昇進に伴う給与アップ
-           if (nextPlayer.salary < candidatePosition.minSalary) {
-              nextPlayer.salary = candidatePosition.minSalary;
-           } else {
-              nextPlayer.salary += Math.floor((candidatePosition.maxSalary - candidatePosition.minSalary) * 0.2);
-           }
-        }
+    // 基本的な昇進確率 (能力スコアから算出)
+    // 完全に要件を満たしている場合は高い確率、不足している場合は低い確率になるようにする
+    let rawProb = ((techScore + networkScore) / 2) * (nextPlayer.intelligence * 0.8);
+    // スコアが1以上なら高確率だが、まだランダム性あり
+    let prob = rawProb > 1.0 ? 0.7 : (rawProb * 0.5);
+
+    // 能力不足でも5%の確率で運良く昇進する
+    prob = Math.max(0.05, prob);
+
+    // 勤続年数による年功序列ボーナス (日系企業のみ)
+    if (company.corporateType === 'domestic') {
+       const extraTenure = nextPlayer.companyTenure - candidatePosition.requiredTenure;
+       if (extraTenure > 0) {
+           // 1年ごとに+10%の昇進確率アップ
+           prob += extraTenure * 0.1;
+       }
+    }
+
+    if (Math.random() < prob && nextPlayer.companyTenure >= candidatePosition.requiredTenure * 0.5) { // 必要な勤続年数の半分は最低限必要とする
+       nextPlayer.positionId = candidatePosition.id;
+       logs.push(`【昇進！】「${candidatePosition.name}」に昇進した！`);
+
+       // 昇進に伴う給与アップ
+       if (nextPlayer.salary < candidatePosition.minSalary) {
+          nextPlayer.salary = candidatePosition.minSalary;
+       } else {
+          nextPlayer.salary += Math.floor((candidatePosition.maxSalary - candidatePosition.minSalary) * 0.2);
+       }
     }
   }
 
