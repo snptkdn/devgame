@@ -1,4 +1,5 @@
-import type { PlayerState, Allocation, LivingStandards, Project } from './types';
+import type { PlayerState, Allocation, Project } from './types';
+import { COMPANIES, PROPERTIES } from './data';
 
 export const AVAILABLE_PROJECTS: Project[] = [
   {
@@ -9,7 +10,7 @@ export const AVAILABLE_PROJECTS: Project[] = [
     requiredTech: 0,
     techGrowthPerYear: 5,
     completionBonusTech: 2,
-    completionBonusFunds: 50
+    completionBonusFunds: 5 // 調整
   },
   {
     id: 'proj_2',
@@ -19,7 +20,7 @@ export const AVAILABLE_PROJECTS: Project[] = [
     requiredTech: 20,
     techGrowthPerYear: 15,
     completionBonusTech: 10,
-    completionBonusFunds: 200
+    completionBonusFunds: 30 // 調整
   },
   {
     id: 'proj_3',
@@ -29,7 +30,7 @@ export const AVAILABLE_PROJECTS: Project[] = [
     requiredTech: 50,
     techGrowthPerYear: 20,
     completionBonusTech: 30,
-    completionBonusFunds: 500
+    completionBonusFunds: 100 // 調整
   },
   {
     id: 'proj_4',
@@ -39,7 +40,7 @@ export const AVAILABLE_PROJECTS: Project[] = [
     requiredTech: 100,
     techGrowthPerYear: 30,
     completionBonusTech: 60,
-    completionBonusFunds: 1000
+    completionBonusFunds: 300 // 調整
   }
 ];
 
@@ -63,13 +64,17 @@ export const createInitialState = (): PlayerState => {
     intelligence: generateIntelligence(),
     isAlive: true,
     livingStandards: {
-      housing: 1,
       food: 1,
       entertainment: 1
     },
     currentProject: null,
     projectYearsLeft: 0,
     history: ["人生シミュレーションを開始しました。"],
+    companyId: 'c1',
+    salary: 300,
+    property: PROPERTIES[0], // 木造アパート
+    car: null,
+    loans: []
   };
 };
 
@@ -86,19 +91,34 @@ export const calculateDeathProbability = (age: number, health: number): number =
   return baseProb * healthFactor;
 };
 
-// 生活費の算出（カテゴリ別）
-export const calculateHousingCost = (level: number) => 60 * Math.pow(1.5, level - 1);
 export const calculateFoodCost = (level: number) => 40 * Math.pow(1.4, level - 1);
 export const calculateEntertainmentCost = (level: number) => 20 * Math.pow(1.8, level - 1);
 
-export const calculateTotalLivingCost = (standards: LivingStandards): number => {
-  return calculateHousingCost(standards.housing) +
-         calculateFoodCost(standards.food) +
-         calculateEntertainmentCost(standards.entertainment);
+export const calculateTotalLivingCost = (player: PlayerState): number => {
+  let cost = 0;
+  cost += calculateFoodCost(player.livingStandards.food);
+  cost += calculateEntertainmentCost(player.livingStandards.entertainment);
+
+  if (player.property && player.property.type === 'rent') {
+    cost += player.property.price; // price in property is per year or month depending on how we render. we assume yearly price. Wait, UI said 60万, but realistic rent might be 120万/year. If price is monthly, we multiply by 12. Let's assume price in property is monthly rent.
+    cost += player.property.price * 12; // Update: we'll treat property.price as monthly rent.
+  }
+
+  // ローンの支払い計算
+  player.loans.forEach(loan => {
+    cost += loan.yearlyPayment;
+  });
+
+  return cost;
 };
 
 export const processTurn = (player: PlayerState, allocation: Allocation): PlayerState => {
-  const nextPlayer = { ...player, history: [...player.history], livingStandards: { ...player.livingStandards } };
+  const nextPlayer = {
+    ...player,
+    history: [...player.history],
+    livingStandards: { ...player.livingStandards },
+    loans: player.loans.map(l => ({ ...l }))
+  };
   const logs: string[] = [];
   logs.push(`--- ${nextPlayer.age}歳の1年 ---`);
 
@@ -106,12 +126,16 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
 
   // 休養
   const restFactor = allocation.rest / 100;
-  // 住居レベルが休養の効果に影響を与える
-  const housingBonus = (nextPlayer.livingStandards.housing - 1) * 5;
+  // 住居による休養ボーナス (家賃/価格に依存)
+  let housingBonus = 0;
+  if (nextPlayer.property) {
+      if (nextPlayer.property.type === 'rent') housingBonus = Math.floor(nextPlayer.property.price / 10);
+      if (nextPlayer.property.type === 'buy') housingBonus = Math.floor(nextPlayer.property.price / 3000);
+  }
+
   const healthDelta = Math.floor(-15 + (40 * restFactor)) + housingBonus;
   nextPlayer.health = Math.min(100, Math.max(0, nextPlayer.health + healthDelta));
 
-  // 食費が低すぎると健康にダメージ
   if (nextPlayer.livingStandards.food === 1) nextPlayer.health = Math.max(0, nextPlayer.health - 5);
   else if (nextPlayer.livingStandards.food >= 4) nextPlayer.health = Math.min(100, nextPlayer.health + 5);
 
@@ -124,43 +148,75 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
 
   // 遊ぶ
   const playFactor = allocation.play / 100;
-  // 娯楽レベルが人脈形成に影響
   const entertainmentBonus = (nextPlayer.livingStandards.entertainment - 1) * 3;
-  const networkGrowth = Math.floor(10 * playFactor) + entertainmentBonus;
+  // 車による人脈ボーナス
+  const carBonus = nextPlayer.car ? Math.floor(nextPlayer.car.price / 200) : 0;
+  const networkGrowth = Math.floor(10 * playFactor) + entertainmentBonus + carBonus;
   nextPlayer.network += networkGrowth;
   if (networkGrowth > 0) logs.push(`遊びを通じて人脈を広げた。`);
 
-  // 仕事（プロジェクト）
+  // 転職活動
+  const jobHuntFactor = allocation.jobHunt / 100;
+  if (jobHuntFactor > 0) {
+      logs.push(`転職活動に ${allocation.jobHunt}% の時間を割いた。`);
+      // ランダムな企業をピックアップ（今のランクより上か同等）
+      const currentCompany = COMPANIES.find(c => c.id === nextPlayer.companyId)!;
+      const targetCompanies = COMPANIES.filter(c => c.rank <= currentCompany.rank && c.id !== currentCompany.id);
+
+      if (targetCompanies.length > 0) {
+          const target = targetCompanies[Math.floor(Math.random() * targetCompanies.length)];
+          // 合否判定: 技術力と人脈、地頭、転職活動割合から算出
+          const techScore = nextPlayer.tech / Math.max(1, target.requiredTech);
+          const networkScore = nextPlayer.network / Math.max(1, target.requiredNetwork);
+
+          let successProb = (techScore * 0.5 + networkScore * 0.5) * jobHuntFactor * nextPlayer.intelligence;
+          if (successProb > Math.random()) {
+              logs.push(`【転職成功！】「${target.name}」から内定をもらい、転職した！`);
+              nextPlayer.companyId = target.id;
+              // 転職時の給与ジャンプアップ (ランダム + 能力ベース)
+              const jump = Math.floor(target.baseRaiseRate * 100 + (Math.random() * 50));
+              nextPlayer.salary += jump;
+          } else {
+              logs.push(`「${target.name}」の選考を受けたが、お見送りとなった...`);
+          }
+      } else {
+          logs.push(`より良い条件の企業が見つからなかった。`);
+      }
+  }
+
+  // 仕事（プロジェクトと給与）
   const workFactor = allocation.work / 100;
-  let earned = 0;
+  const company = COMPANIES.find(c => c.id === nextPlayer.companyId)!;
 
-  // サラリーマンの給与計算
-  // 基本給 200万 + 技術力に応じた能力給
-  const baseSalary = 200;
-  const abilitySalary = Math.floor(nextPlayer.tech * 2.5 * nextPlayer.intelligence); // 駆け出し(10)で約25万, ベテラン(150)で約375万
-  const standardSalary = baseSalary + abilitySalary;
+  // 基本給の昇給 (前年ベース + 能力・企業ランクによる昇給)
+  const baseRaise = Math.floor(nextPlayer.salary * (company.baseRaiseRate - 1));
+  const abilityRaise = Math.floor(nextPlayer.tech * 0.1 * nextPlayer.intelligence);
+  // 昇給額にランダムブレを持たせる (0.8 ~ 1.2)
+  const actualRaise = Math.floor((baseRaise + abilityRaise) * (0.8 + Math.random() * 0.4));
+  nextPlayer.salary += actualRaise;
 
-  // ワークライフバランス（残業代的な概念）
-  // 仕事割合50%を標準とし、それ以上は残業代として加算
-  const overtimeFactor = Math.max(0, workFactor - 0.5) * 2; // 50%~100%を0~1.0にマッピング
-  const overtimePay = Math.floor(standardSalary * 0.4 * overtimeFactor); // 最大40%増し
-
-  earned = standardSalary + overtimePay;
+  const standardSalary = nextPlayer.salary;
+  const overtimeFactor = Math.max(0, workFactor - 0.5) * 2;
+  const overtimePay = Math.floor(standardSalary * 0.4 * overtimeFactor);
+  let earned = standardSalary + overtimePay;
 
   if (nextPlayer.currentProject) {
     const proj = nextPlayer.currentProject;
     logs.push(`案件「${proj.name}」に従事。（残り${nextPlayer.projectYearsLeft}年）`);
 
-    // プロジェクトによる技術力向上
     const projTechGrowth = Math.floor(proj.techGrowthPerYear * workFactor * nextPlayer.intelligence);
     techGrowth += projTechGrowth;
-
     nextPlayer.projectYearsLeft -= 1;
 
     if (nextPlayer.projectYearsLeft <= 0) {
       logs.push(`【案件完遂！】「${proj.name}」を見事にやり遂げた！`);
-      logs.push(`ボーナスとして資金 ${proj.completionBonusFunds}万円、技術力 ${proj.completionBonusTech} を獲得！`);
-      earned += proj.completionBonusFunds;
+
+      // ボーナスにランダム要素を加える (0.8 ~ 1.5)
+      const bonusMultiplier = 0.8 + (Math.random() * 0.7);
+      const actualBonusFunds = Math.floor(proj.completionBonusFunds * bonusMultiplier);
+
+      logs.push(`ボーナスとして資金 ${actualBonusFunds}万円、技術力 ${proj.completionBonusTech} を獲得！`);
+      earned += actualBonusFunds;
       techGrowth += proj.completionBonusTech;
       nextPlayer.currentProject = null;
     }
@@ -173,15 +229,34 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
 
   nextPlayer.funds += earned;
 
-  // 2. 生活費の支払い
-  const livingCost = Math.floor(calculateTotalLivingCost(nextPlayer.livingStandards));
-  nextPlayer.funds -= livingCost;
+  // 2. 生活費・ローンの支払い
+  let livingCost = calculateFoodCost(nextPlayer.livingStandards.food) + calculateEntertainmentCost(nextPlayer.livingStandards.entertainment);
+
+  if (nextPlayer.property && nextPlayer.property.type === 'rent') {
+      livingCost += nextPlayer.property.price * 12;
+  }
+
+  let totalLoanPayment = 0;
+  for (let i = nextPlayer.loans.length - 1; i >= 0; i--) {
+      const loan = nextPlayer.loans[i];
+      totalLoanPayment += loan.yearlyPayment;
+      loan.remainingPrincipal -= (loan.yearlyPayment - (loan.remainingPrincipal * loan.interestRate));
+      loan.remainingYears -= 1;
+
+      if (loan.remainingYears <= 0 || loan.remainingPrincipal <= 0) {
+          logs.push(`【ローン完済】「${loan.name}」のローンを完済した！`);
+          nextPlayer.loans.splice(i, 1);
+      }
+  }
+
+  const totalExpense = Math.floor(livingCost + totalLoanPayment);
+  nextPlayer.funds -= totalExpense;
 
   if (nextPlayer.funds < 0) {
     logs.push(`資金が底をつき、借金生活に突入した...（ストレスで健康激減）`);
     nextPlayer.health -= 30; // 借金ペナルティ
   } else {
-    logs.push(`給与 ${earned}万円 を得て、生活費 ${livingCost}万円 を支出した。`);
+    logs.push(`給与 ${earned}万円 を得て、生活費・住居費・ローン等 ${totalExpense}万円 を支出した。`);
   }
 
   // 3. 死亡判定
