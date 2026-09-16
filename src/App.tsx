@@ -245,8 +245,14 @@ function App() {
 
                 <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                     {COMPANIES.filter(c => c.id !== player.companyId).map(c => {
-                        const techScore = player.tech / Math.max(1, c.requiredTech);
-                        const networkScore = player.network / Math.max(1, c.requiredNetwork);
+                        let techScore = player.tech / Math.max(1, c.requiredTech);
+                        let networkScore = player.network / Math.max(1, c.requiredNetwork);
+
+                        if (techScore < 1.0) techScore = Math.pow(techScore, 2.5);
+                        if (networkScore < 1.0) networkScore = Math.pow(networkScore, 2.5);
+                        techScore = Math.min(1.5, techScore);
+                        networkScore = Math.min(1.5, networkScore);
+
                         let rawProb = (techScore * 0.5 + networkScore * 0.5) * (allocation.jobHunt > 0 ? allocation.jobHunt / 100 : 0.2) * player.intelligence;
                         const successProb = Math.floor(Math.max(0.01, Math.min(0.95, rawProb)) * 100);
 
@@ -267,7 +273,10 @@ function App() {
                     }).sort((a, b) => b.successProb - a.successProb).map(item => (
                         <div key={item.company.id} className="p-4 border rounded-xl shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
-                                <h3 className="font-bold text-lg mb-1">{item.company.name}</h3>
+                                <h3 className="font-bold text-lg mb-1">
+                                    <span className="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded mr-2 align-middle">Tier {rankToTier(item.company.rank)}</span>
+                                    {item.company.name}
+                                </h3>
                                 <p className="text-sm text-gray-600">想定年収: {item.minSal}万円 〜 {item.maxSal}万円</p>
                             </div>
                             <div className="flex items-center gap-4">
@@ -591,21 +600,20 @@ function App() {
                             <p className="text-sm text-gray-600 mb-3">新しい案件を選んでください。</p>
                             <div className="space-y-3">
                                 {AVAILABLE_PROJECTS.filter(p => !currentPosition || currentPosition.level >= p.requiredPositionLevel).map(proj => {
-                                const canSelect = player.tech >= proj.requiredTech;
+                                const isTechMet = player.tech >= proj.requiredTech;
                                 const isSelected = selectedProjectId === proj.id;
                                 return (
                                     <div
                                     key={proj.id}
-                                    onClick={() => canSelect && setSelectedProjectId(proj.id)}
+                                    onClick={() => setSelectedProjectId(proj.id)}
                                     className={`p-4 rounded-lg border text-sm transition-all shadow-sm ${
-                                        !canSelect ? 'bg-gray-50 border-gray-200 opacity-60 cursor-not-allowed' :
                                         isSelected ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-200 cursor-pointer' :
                                         'bg-white border-gray-300 hover:border-blue-400 cursor-pointer'
                                     }`}
                                     >
                                     <div className="flex justify-between items-center mb-1">
                                         <div className="font-bold text-gray-800">{proj.name}</div>
-                                        {!canSelect && <div className="text-xs text-red-500 font-bold bg-red-100 px-2 py-0.5 rounded">必要技術: {proj.requiredTech}</div>}
+                                        {!isTechMet && <div className="text-xs text-red-500 font-bold bg-red-100 px-2 py-0.5 rounded" title="実力不足のため、進捗に重いペナルティがかかります">⚠️ 技術不足 ({player.tech}/{proj.requiredTech})</div>}
                                         {isSelected && <CheckCircle className="w-5 h-5 text-blue-600" />}
                                     </div>
                                     <div className={`text-xs mt-2 ${isSelected ? 'text-blue-800' : 'text-gray-500'}`}>
