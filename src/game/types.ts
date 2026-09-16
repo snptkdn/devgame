@@ -23,7 +23,7 @@ export type Company = {
   baseSalaryMultiplier: number;
   id: string;
   name: string;
-  rank: number; // 1: tier1, 2: tier2, 3: tier3
+  rank: number; // 7: S, 6: A, 5: B, 4: C, 3: D, 2: E, 1: F
   corporateType: 'domestic' | 'foreign';
   baseRaiseRate: number; // 昇給の目安
   loanInterestRate: number; // ローン金利 (0.01 = 1%)
