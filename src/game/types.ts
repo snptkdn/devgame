@@ -9,6 +9,7 @@ export type Allocation = {
 export type Position = {
   id: string;
   name: string;
+  level: number;
   minSalary: number;
   maxSalary: number;
   requiredTech: number;
@@ -18,6 +19,8 @@ export type Position = {
 };
 
 export type Company = {
+  isForeign: boolean;
+  baseSalaryMultiplier: number;
   id: string;
   name: string;
   rank: number; // 1: tier1, 2: tier2, 3: tier3
@@ -72,11 +75,14 @@ export type Project = {
   id: string;
   name: string;
   description: string;
+  difficulty: number;
   durationYears: number;
   requiredTech: number;
+  requiredPositionLevel: number;
   techGrowthPerYear: number;
+  completionBonusFunds: number;
   completionBonusTech: number;
-  completionBonusFunds: number; // 調整予定
+  requiredEffort: number;
 };
 
 export type JobOffer = {
@@ -115,6 +121,8 @@ export type PlayerState = {
 };
 
 export type GameState = {
+  projectProgress: number;
+  consecutivePoorEvaluations: number;
   player: PlayerState;
   allocation: Allocation;
   turn: number;

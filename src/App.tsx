@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { createInitialState, processTurn, calculateTotalLivingCost } from './game/engine';
-import { COMPANIES, PROPERTIES, CARS } from './game/data';
-import type { Allocation, PlayerState } from './game/types';
+import { processTurn, calculateTotalLivingCost } from './game/engine';
+import { COMPANIES, PROPERTIES, CARS, createInitialState } from './game/data';
+import type { Allocation, PlayerState, GameState } from './game/types';
 import { Brain, Users, Briefcase, Coins, ChevronRight, Activity, Gamepad2, Coffee, Home, CheckCircle, Building, Car as CarIcon, Plus, Minus, PiggyBank, Target } from 'lucide-react';
 
 type TurnSummary = {
@@ -18,8 +18,11 @@ type TurnSummary = {
 };
 
 function App() {
-  const [player, setPlayer] = useState<PlayerState>(createInitialState());
-  const [allocation, setAllocation] = useState<Allocation>({ work: 50, rest: 10, study: 20, play: 20, jobHunt: 0 });
+  const [gameState, setGameState] = useState<GameState>(createInitialState());
+  const player = gameState.player;
+  const allocation = gameState.allocation;
+  const setPlayer = (p: any) => setGameState(prev => ({ ...prev, player: typeof p === 'function' ? p(prev.player) : p }));
+  const setAllocation = (a: any) => setGameState(prev => ({ ...prev, allocation: typeof a === 'function' ? a(prev.allocation) : a }));
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [targetCompanyId, setTargetCompanyId] = useState<string>('');
   const [showJobHuntModal, setShowJobHuntModal] = useState<boolean>(false);
@@ -45,7 +48,7 @@ function App() {
   const maxNetwork = Math.max(...COMPANIES.flatMap(c => c.positions.map(p => p.requiredNetwork)));
 
   const handleAllocationChange = (key: keyof Allocation, delta: number) => {
-    setAllocation(prev => {
+    setAllocation((prev: Allocation) => {
       let nextValue = prev[key] + delta;
 
       // Boundaries
@@ -65,7 +68,7 @@ function App() {
   };
 
   const handleLivingStandardChange = (key: keyof PlayerState['livingStandards'], value: number) => {
-    setPlayer(prev => ({
+    setPlayer((prev: PlayerState) => ({
       ...prev,
       livingStandards: {
         ...prev.livingStandards,
@@ -90,7 +93,7 @@ function App() {
         if (!nextPlayer.currentProject && selectedProjectId) {
           nextPlayer.currentProject = AVAILABLE_PROJECTS.find(p => p.id === selectedProjectId) || null;
           if (nextPlayer.currentProject) {
-            nextPlayer.projectYearsLeft = nextPlayer.currentProject.durationYears;
+            nextPlayer.projectYearsLeft = 0; // Not used anymore
           }
         }
         if (allocation.jobHunt > 0) {
@@ -104,8 +107,9 @@ function App() {
     const prevFunds = nextPlayer.funds;
     const prevWasRetired = nextPlayer.isRetired;
 
-    const newPlayerState = processTurn(nextPlayer, allocation);
-    setPlayer(newPlayerState);
+    const newState = processTurn({ ...gameState, player: nextPlayer, allocation });
+    setGameState(newState);
+    const newPlayerState = newState.player;
 
     // Summary calculation
     if (!newPlayerState.isAlive && player.isAlive) {
@@ -166,13 +170,13 @@ function App() {
     }
   };
 
-  const isProjectReady = player.currentProject !== null || selectedProjectId !== '' || player.isRetired;
+  const isProjectReady = player.currentProject !== null || selectedProjectId !== '' || player.isRetired || player.companyId === '';
 
   const handleOfferResponse = (accept: boolean) => {
     if (accept && player.pendingOffer) {
         const offer = player.pendingOffer;
         const newCompany = COMPANIES.find(c => c.id === offer.companyId)!;
-        setPlayer(prev => ({
+        setPlayer((prev: PlayerState) => ({
             ...prev,
             companyId: offer.companyId,
             positionId: offer.positionId,
@@ -182,7 +186,7 @@ function App() {
             history: [...prev.history, `【転職】「${newCompany.name}」に入社した！年収は${offer.offeredSalary}万円だ。`]
         }));
     } else {
-        setPlayer(prev => ({
+        setPlayer((prev: PlayerState) => ({
             ...prev,
             pendingOffer: null,
             history: [...prev.history, `内定を辞退した。`]
@@ -544,26 +548,35 @@ function App() {
                         <h2 className="text-md font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-2">仕事の選択</h2>
 
                         {player.currentProject ? (
-                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm">
-                            <div className="flex justify-between items-start mb-2">
-                                <div>
-                                <div className="font-bold text-lg text-blue-900">{player.currentProject.name}</div>
-                                <div className="text-sm text-blue-700 mt-1">{player.currentProject.description}</div>
-                                </div>
-                                <div className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded shadow">
-                                残り {player.projectYearsLeft} 年
-                                </div>
-                            </div>
-                            <div className="mt-3 text-xs font-bold text-blue-800 grid grid-cols-2 gap-2 bg-white/50 p-2 rounded">
-                                <div>成長: 技術+{player.currentProject.techGrowthPerYear}/年</div>
-                                <div>完遂: 資金{player.currentProject.completionBonusFunds}万 / 技術+{player.currentProject.completionBonusTech}</div>
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 shadow-sm relative overflow-hidden">
+                            <div className="relative z-10">
+                              <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                  <div className="font-bold text-lg text-blue-900">{player.currentProject.name}</div>
+                                  <div className="text-sm text-blue-700 mt-1">{player.currentProject.description}</div>
+                                  </div>
+                                  <div className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded shadow">
+                                  進捗: {Math.min(100, Math.floor((gameState.projectProgress / player.currentProject.requiredEffort) * 100))}%
+                                  </div>
+                              </div>
+                              <div className="w-full bg-blue-200 rounded-full h-2 mb-3">
+                                 <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${Math.min(100, (gameState.projectProgress / player.currentProject.requiredEffort) * 100)}%` }}></div>
+                              </div>
+                              <div className="flex justify-between text-xs text-blue-800 font-bold mb-2">
+                                <span>難易度: {'★'.repeat(player.currentProject.difficulty)}</span>
+                                <span className={gameState.consecutivePoorEvaluations > 0 ? 'text-red-500' : 'text-blue-500'}>ストライク: {gameState.consecutivePoorEvaluations}</span>
+                              </div>
+                              <div className="mt-2 text-xs font-bold text-blue-800 grid grid-cols-2 gap-2 bg-white/50 p-2 rounded">
+                                  <div>成長: 技術+{player.currentProject.techGrowthPerYear}/年</div>
+                                  <div>完遂: 資金{player.currentProject.completionBonusFunds}万 / 技術+{player.currentProject.completionBonusTech}</div>
+                              </div>
                             </div>
                             </div>
                         ) : (
                             <div>
                             <p className="text-sm text-gray-600 mb-3">新しい案件を選んでください。</p>
                             <div className="space-y-3">
-                                {AVAILABLE_PROJECTS.map(proj => {
+                                {AVAILABLE_PROJECTS.filter(p => !currentPosition || currentPosition.level >= p.requiredPositionLevel).map(proj => {
                                 const canSelect = player.tech >= proj.requiredTech;
                                 const isSelected = selectedProjectId === proj.id;
                                 return (
@@ -577,12 +590,17 @@ function App() {
                                     }`}
                                     >
                                     <div className="flex justify-between items-center mb-1">
-                                        <div className="font-bold text-gray-800">{proj.name} <span className="text-xs font-normal opacity-80">({proj.durationYears}年)</span></div>
+                                        <div className="font-bold text-gray-800">{proj.name}</div>
                                         {!canSelect && <div className="text-xs text-red-500 font-bold bg-red-100 px-2 py-0.5 rounded">必要技術: {proj.requiredTech}</div>}
                                         {isSelected && <CheckCircle className="w-5 h-5 text-blue-600" />}
                                     </div>
                                     <div className={`text-xs mt-2 ${isSelected ? 'text-blue-800' : 'text-gray-500'}`}>
-                                        {proj.description} <br/> <span className="font-bold inline-block mt-1">ボーナス: 資金{proj.completionBonusFunds}万 / 技術+{proj.completionBonusTech}</span>
+                                        {proj.description} <br/>
+                                        <div className="mt-2 grid grid-cols-3 gap-2">
+                                          <span>必要工数: {proj.requiredEffort}</span>
+                                          <span>難易度: {'★'.repeat(proj.difficulty)}</span>
+                                          <span className="font-bold">ボーナス: 資金{proj.completionBonusFunds}万 / 技術+{proj.completionBonusTech}</span>
+                                        </div>
                                     </div>
                                     </div>
                                 );
@@ -736,7 +754,7 @@ function App() {
                                             <button
                                                 disabled={player.funds < loan.remainingPrincipal}
                                                 onClick={() => {
-                                                    setPlayer(prev => ({
+                                                    setPlayer((prev: PlayerState) => ({
                                                         ...prev,
                                                         funds: prev.funds - loan.remainingPrincipal,
                                                         loans: prev.loans.filter(l => l.id !== loan.id),
@@ -771,7 +789,7 @@ function App() {
                                             newLoans = newLoans.filter(l => l.id !== loanToPay.id);
                                         }
 
-                                        setPlayer(prev => ({
+                                        setPlayer((prev: PlayerState) => ({
                                             ...prev,
                                             funds: prev.funds + profit,
                                             property: null,
@@ -799,7 +817,7 @@ function App() {
                                             newLoans = newLoans.filter(l => l.id !== loanToPay.id);
                                         }
 
-                                        setPlayer(prev => ({
+                                        setPlayer((prev: PlayerState) => ({
                                             ...prev,
                                             funds: prev.funds + profit,
                                             car: null,
@@ -859,7 +877,7 @@ function App() {
                                             <button
                                                 disabled={!canAffordCash}
                                                 onClick={() => {
-                                                    setPlayer(prev => ({
+                                                    setPlayer((prev: PlayerState) => ({
                                                         ...prev,
                                                         funds: prev.funds - cost,
                                                         property: { ...prop, ownedYears: 0 },
@@ -894,7 +912,7 @@ function App() {
                                                                 yearlyPayment: payment
                                                             };
 
-                                                            setPlayer(prev => ({
+                                                            setPlayer((prev: PlayerState) => ({
                                                                 ...prev,
                                                                 property: { ...prop, ownedYears: 0 },
                                                                 loans: [...prev.loans, newLoan],
@@ -938,7 +956,7 @@ function App() {
                                             <button
                                                 disabled={!canAffordCash}
                                                 onClick={() => {
-                                                    setPlayer(prev => ({
+                                                    setPlayer((prev: PlayerState) => ({
                                                         ...prev,
                                                         funds: prev.funds - car.price,
                                                         car: { ...car, ownedYears: 0 },
@@ -965,7 +983,7 @@ function App() {
                                                         yearlyPayment: payment
                                                     };
 
-                                                    setPlayer(prev => ({
+                                                    setPlayer((prev: PlayerState) => ({
                                                         ...prev,
                                                         car: { ...car, ownedYears: 0 },
                                                         loans: [...prev.loans, newLoan],
