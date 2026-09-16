@@ -75,7 +75,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 2,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -136,7 +136,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 4,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 600, maxSalary: 1500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 800, maxSalary: 2100, requiredTech: 90, requiredNetwork: 30, requiredTenure: 3, isExecutive: false },
@@ -197,7 +197,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 6,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -258,7 +258,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 8,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
@@ -319,7 +319,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 10,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
@@ -380,7 +380,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 12,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
@@ -441,7 +441,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 14,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
@@ -502,7 +502,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 16,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
@@ -563,7 +563,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 18,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
@@ -624,7 +624,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 20,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 180, maxSalary: 350, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 240, maxSalary: 489, requiredTech: 15, requiredNetwork: 5, requiredTenure: 3, isExecutive: false },
@@ -685,7 +685,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 22,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 180, maxSalary: 350, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 240, maxSalary: 489, requiredTech: 15, requiredNetwork: 5, requiredTenure: 3, isExecutive: false },
@@ -746,7 +746,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 24,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
@@ -807,7 +807,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 26,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
@@ -868,7 +868,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 28,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -929,7 +929,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 30,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
@@ -990,7 +990,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 32,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
@@ -1051,7 +1051,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 34,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
@@ -1112,7 +1112,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 36,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
@@ -1173,7 +1173,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 38,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -1234,7 +1234,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 40,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
@@ -1295,7 +1295,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 42,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
@@ -1356,7 +1356,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 44,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -1417,7 +1417,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 46,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
@@ -1478,7 +1478,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 48,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
@@ -1539,7 +1539,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 50,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -1600,7 +1600,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 52,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 600, maxSalary: 1500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 800, maxSalary: 2100, requiredTech: 90, requiredNetwork: 30, requiredTenure: 3, isExecutive: false },
@@ -1661,7 +1661,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 54,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
@@ -1722,7 +1722,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'domestic',
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 56,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
@@ -1783,7 +1783,7 @@ export const COMPANIES: Company[] = [
     corporateType: 'foreign',
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
-    requiredNetwork: 0,
+    requiredNetwork: 58,
     positions: [
       { id: 'p1', name: '平社員', level: 1, minSalary: 600, maxSalary: 1500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
       { id: 'p2', name: '主任', level: 2, minSalary: 800, maxSalary: 2100, requiredTech: 90, requiredNetwork: 30, requiredTenure: 3, isExecutive: false },

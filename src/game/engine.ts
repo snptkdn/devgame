@@ -183,13 +183,18 @@ export const processTurn = (state: GameState): GameState => {
       const targetCompany = COMPANIES.find(c => c.id === nextPlayer.targetCompanyId)!;
 
       // 合否判定: 技術力と人脈、地頭、転職活動割合から算出
-      const techScore = nextPlayer.tech / Math.max(1, targetCompany.requiredTech);
-      const networkScore = nextPlayer.network / Math.max(1, targetCompany.requiredNetwork);
+      let techScore = nextPlayer.tech / Math.max(1, targetCompany.requiredTech);
+      let networkScore = nextPlayer.network / Math.max(1, targetCompany.requiredNetwork);
 
-      // 上限を設けて100%受かることはなくす (最高でも80~90%など)
-      // 基本的な確率に加えて、ステータスが十分でもランダムで落ちる要素を追加する
+      // スキル不足の場合は大幅に減点する
+      if (techScore < 1.0) techScore = Math.pow(techScore, 2.5);
+      if (networkScore < 1.0) networkScore = Math.pow(networkScore, 2.5);
+
+      // オーバーキルを防ぐためキャップを設ける
+      techScore = Math.min(1.5, techScore);
+      networkScore = Math.min(1.5, networkScore);
+
       let rawProb = (techScore * 0.5 + networkScore * 0.5) * jobHuntFactor * nextPlayer.intelligence;
-      // 0〜0.95の範囲にクリップ
       let successProb = Math.max(0.01, Math.min(0.95, rawProb));
 
       // さらなるランダム性 (面接官との相性など)
@@ -297,7 +302,14 @@ export const processTurn = (state: GameState): GameState => {
     // 能力値と割り振りによる進捗計算
     const techFactor = 1 + (nextPlayer.tech / 100);
     const intFactor = nextPlayer.intelligence;
-    const progressGain = Math.floor(workPercent * techFactor * intFactor);
+
+    // 要求技術に満たない場合のペナルティ
+    let penalty = 1.0;
+    if (nextPlayer.tech < proj.requiredTech) {
+        penalty = Math.max(0.1, Math.pow(nextPlayer.tech / Math.max(1, proj.requiredTech), 1.5));
+    }
+
+    const progressGain = Math.floor(workPercent * techFactor * intFactor * penalty);
 
     nextState.projectProgress += progressGain;
     const progressPercent = Math.min(100, Math.floor((nextState.projectProgress / proj.requiredEffort) * 100));
