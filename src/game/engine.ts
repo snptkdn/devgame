@@ -1,5 +1,5 @@
-import type { PlayerState, Allocation } from './types';
-import { COMPANIES, PROPERTIES } from './data';
+import type { PlayerState, GameState } from './types';
+import { COMPANIES } from './data';
 
 export const generateIntelligence = (): number => {
   let u = 0, v = 0;
@@ -9,36 +9,6 @@ export const generateIntelligence = (): number => {
   const mean = 1.0;
   const stdDev = 0.2;
   return Math.max(0.2, Math.min(1.8, mean + stdDev * stdNormal));
-};
-
-export const createInitialState = (): PlayerState => {
-  return {
-    age: 22,
-    funds: 100,
-    tech: 10,
-    health: 100,
-    network: 10,
-    intelligence: generateIntelligence(),
-    isAlive: true,
-    livingStandards: {
-      food: 1,
-      entertainment: 1
-    },
-    currentProject: null,
-    projectYearsLeft: 0,
-    history: ["人生シミュレーションを開始しました。"],
-    companyId: 'c1',
-    companyTenure: 0,
-    positionId: 'c1_p1', // 平社員
-    salary: 300,
-    pensionFund: 0,
-    isRetired: false,
-    targetCompanyId: null,
-    pendingOffer: null,
-    property: { ...PROPERTIES[0], ownedYears: 0 }, // 木造アパート
-    car: null,
-    loans: []
-  };
 };
 
 export const calculateDeathProbability = (age: number, health: number): number => {
@@ -75,13 +45,13 @@ export const calculateTotalLivingCost = (player: PlayerState): number => {
   return cost;
 };
 
-export const processTurn = (player: PlayerState, allocation: Allocation): PlayerState => {
-  const nextPlayer = {
-    ...player,
-    history: [...player.history],
-    livingStandards: { ...player.livingStandards },
-    loans: player.loans.map(l => ({ ...l }))
-  };
+export const processTurn = (state: GameState): GameState => {
+  const player = state.player;
+  const allocation = state.allocation;
+  const nextState = { ...state, player: { ...player, history: [...player.history], livingStandards: { ...player.livingStandards }, loans: player.loans.map(l => ({ ...l })) } };
+  const nextPlayer = nextState.player;
+
+
   const logs: string[] = [];
   logs.push(`--- ${nextPlayer.age}歳の1年 ---`);
 
@@ -167,7 +137,7 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
     }
 
     nextPlayer.history = [...nextPlayer.history, ...logs];
-    return nextPlayer;
+    return nextState;
   }
 
   // 1. 各行動の結果を計算
@@ -241,7 +211,7 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
           // 短い勤続年数のペナルティ
           const tenurePenalty = nextPlayer.companyTenure < 2 ? 0.8 : 1.0;
 
-          const baseOffer = offeredPosition.minSalary + Math.random() * (offeredPosition.maxSalary - offeredPosition.minSalary);
+          const baseOffer = (offeredPosition.minSalary + Math.random() * (offeredPosition.maxSalary - offeredPosition.minSalary)) * targetCompany.baseSalaryMultiplier;
           const offeredSalary = Math.floor(baseOffer * tenurePenalty);
 
           logs.push(`【内定！】「${targetCompany.name}」から内定をもらった！`);
@@ -249,7 +219,7 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
           nextPlayer.pendingOffer = {
             companyId: targetCompany.id,
             positionId: offeredPosition.id,
-            offeredSalary: Math.max(offeredPosition.minSalary, Math.min(offeredPosition.maxSalary, offeredSalary))
+            offeredSalary: Math.max(Math.floor(offeredPosition.minSalary * targetCompany.baseSalaryMultiplier), Math.min(Math.floor(offeredPosition.maxSalary * targetCompany.baseSalaryMultiplier), offeredSalary))
           };
       } else {
           logs.push(`「${targetCompany.name}」の選考を受けたが、お見送りとなった...`);
@@ -262,79 +232,84 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
 
   // 仕事（プロジェクトと給与）
   const workFactor = allocation.work / 100;
-  const company = COMPANIES.find(c => c.id === nextPlayer.companyId)!;
-  const currentPosition = company.positions.find(p => p.id === nextPlayer.positionId) || company.positions[0];
+  const company = COMPANIES.find(c => c.id === nextPlayer.companyId);
+  const currentPosition = company ? (company.positions.find(p => p.id === nextPlayer.positionId) || company.positions[0]) : null;
 
-  // 昇進判定
-  const nextPositionIndex = company.positions.findIndex(p => p.id === currentPosition.id) + 1;
-  if (nextPositionIndex < company.positions.length) {
-    const candidatePosition = company.positions[nextPositionIndex];
-
-    const techScore = nextPlayer.tech / Math.max(1, candidatePosition.requiredTech);
-    const networkScore = nextPlayer.network / Math.max(1, candidatePosition.requiredNetwork);
-
-    // 基本的な昇進確率 (能力スコアから算出)
-    // 完全に要件を満たしている場合は高い確率、不足している場合は低い確率になるようにする
-    let rawProb = ((techScore + networkScore) / 2) * (nextPlayer.intelligence * 0.8);
-    // スコアが1以上なら高確率だが、まだランダム性あり
-    let prob = rawProb > 1.0 ? 0.7 : (rawProb * 0.5);
-
-    // 能力不足でも5%の確率で運良く昇進する
-    prob = Math.max(0.05, prob);
-
-    // 勤続年数による年功序列ボーナス (日系企業のみ)
-    if (company.corporateType === 'domestic') {
-       const extraTenure = nextPlayer.companyTenure - candidatePosition.requiredTenure;
-       if (extraTenure > 0) {
-           // 1年ごとに+10%の昇進確率アップ
-           prob += extraTenure * 0.1;
-       }
-    }
-
-    if (Math.random() < prob && nextPlayer.companyTenure >= candidatePosition.requiredTenure * 0.5) { // 必要な勤続年数の半分は最低限必要とする
-       nextPlayer.positionId = candidatePosition.id;
-       logs.push(`【昇進！】「${candidatePosition.name}」に昇進した！`);
-
-       // 昇進に伴う給与アップ
-       if (nextPlayer.salary < candidatePosition.minSalary) {
-          nextPlayer.salary = candidatePosition.minSalary;
-       } else {
-          nextPlayer.salary += Math.floor((candidatePosition.maxSalary - candidatePosition.minSalary) * 0.2);
-       }
-    }
+  if (!company) {
+    logs.push(`無職のため、仕事はない。`);
   }
 
-  // 基本給の昇給 (前年ベース + 能力・企業ランクによる昇給)
-  const baseRaise = Math.floor(nextPlayer.salary * (company.baseRaiseRate - 1));
-  const abilityRaise = Math.floor(nextPlayer.tech * 0.1 * nextPlayer.intelligence);
-  // 昇給額にランダムブレを持たせる (0.8 ~ 1.2)
-  const actualRaise = Math.floor((baseRaise + abilityRaise) * (0.8 + Math.random() * 0.4));
+  let earned = 0;
+  if (company && currentPosition) {
+    // 昇進判定
+    const nextPositionIndex = company.positions.findIndex(p => p.id === currentPosition.id) + 1;
+    if (nextPositionIndex < company.positions.length) {
+      const candidatePosition = company.positions[nextPositionIndex];
 
-  nextPlayer.salary += actualRaise;
+      const techScore = nextPlayer.tech / Math.max(1, candidatePosition.requiredTech);
+      const networkScore = nextPlayer.network / Math.max(1, candidatePosition.requiredNetwork);
 
-  // 役職の上限キャップ
-  const maxSalaryForPosition = company.positions.find(p => p.id === nextPlayer.positionId)?.maxSalary || 9999;
-  if (nextPlayer.salary > maxSalaryForPosition) {
-    nextPlayer.salary = maxSalaryForPosition;
+      let rawProb = ((techScore + networkScore) / 2) * (nextPlayer.intelligence * 0.8);
+      let prob = rawProb > 1.0 ? 0.7 : (rawProb * 0.5);
+      prob = Math.max(0.05, prob);
+
+      if (company.corporateType === 'domestic') {
+         const extraTenure = nextPlayer.companyTenure - candidatePosition.requiredTenure;
+         if (extraTenure > 0) {
+             prob += extraTenure * 0.1;
+         }
+      }
+
+      if (Math.random() < prob && nextPlayer.companyTenure >= candidatePosition.requiredTenure * 0.5) {
+         nextPlayer.positionId = candidatePosition.id;
+         logs.push(`【昇進！】「${candidatePosition.name}」に昇進した！`);
+
+         if (nextPlayer.salary < candidatePosition.minSalary * company.baseSalaryMultiplier) {
+            nextPlayer.salary = Math.floor(candidatePosition.minSalary * company.baseSalaryMultiplier);
+         } else {
+            nextPlayer.salary += Math.floor((candidatePosition.maxSalary * company.baseSalaryMultiplier - candidatePosition.minSalary * company.baseSalaryMultiplier) * 0.2);
+         }
+      }
+    }
+
+    // 基本給の昇給
+    const baseRaise = Math.floor(nextPlayer.salary * (company.baseRaiseRate - 1));
+    const abilityRaise = Math.floor(nextPlayer.tech * 0.1 * nextPlayer.intelligence);
+    const actualRaise = Math.floor((baseRaise + abilityRaise) * (0.8 + Math.random() * 0.4));
+    nextPlayer.salary += actualRaise;
+
+    // 役職の上限キャップ
+    const maxSalaryForPosition = Math.floor((company.positions.find(p => p.id === nextPlayer.positionId)?.maxSalary || 9999) * company.baseSalaryMultiplier);
+    if (nextPlayer.salary > maxSalaryForPosition) {
+      nextPlayer.salary = maxSalaryForPosition;
+    }
+
+    const standardSalary = nextPlayer.salary;
+    const overtimeFactor = Math.max(0, workFactor - 0.5) * 2;
+    const overtimePay = Math.floor(standardSalary * 0.4 * overtimeFactor);
+    earned = standardSalary + overtimePay;
   }
-
-  const standardSalary = nextPlayer.salary;
-  const overtimeFactor = Math.max(0, workFactor - 0.5) * 2;
-  const overtimePay = Math.floor(standardSalary * 0.4 * overtimeFactor);
-  let earned = standardSalary + overtimePay;
 
   if (nextPlayer.currentProject) {
     const proj = nextPlayer.currentProject;
-    logs.push(`案件「${proj.name}」に従事。（残り${nextPlayer.projectYearsLeft}年）`);
+    const workPercent = allocation.work;
 
-    const projTechGrowth = Math.floor(proj.techGrowthPerYear * workFactor * nextPlayer.intelligence);
+    // 能力値と割り振りによる進捗計算
+    const techFactor = 1 + (nextPlayer.tech / 100);
+    const intFactor = nextPlayer.intelligence;
+    const progressGain = Math.floor(workPercent * techFactor * intFactor);
+
+    nextState.projectProgress += progressGain;
+    const progressPercent = Math.min(100, Math.floor((nextState.projectProgress / proj.requiredEffort) * 100));
+
+    logs.push(`案件「${proj.name}」に従事。（進捗: ${progressPercent}% / 今回の進捗: +${progressGain}）`);
+
+    const projTechGrowth = Math.floor((proj.techGrowthPerYear || 0) * workFactor * nextPlayer.intelligence / 100);
     techGrowth += projTechGrowth;
-    nextPlayer.projectYearsLeft -= 1;
 
-    if (nextPlayer.projectYearsLeft <= 0) {
+    if (nextState.projectProgress >= proj.requiredEffort) {
       logs.push(`【案件完遂！】「${proj.name}」を見事にやり遂げた！`);
 
-      // ボーナスにランダム要素を加える (0.8 ~ 1.5)
       const bonusMultiplier = 0.8 + (Math.random() * 0.7);
       const actualBonusFunds = Math.floor(proj.completionBonusFunds * bonusMultiplier);
 
@@ -342,6 +317,48 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
       earned += actualBonusFunds;
       techGrowth += proj.completionBonusTech;
       nextPlayer.currentProject = null;
+      nextState.projectProgress = 0;
+      nextState.consecutivePoorEvaluations = 0; // 完遂したらストライクリセット
+    } else {
+      // 年間評価: 進捗が30未満の場合は低評価（ストライク）
+      const requiredGain = Math.floor(nextPlayer.currentProject.requiredEffort * 0.4);
+            if (progressGain < requiredGain) {
+        nextState.consecutivePoorEvaluations += 1;
+        logs.push(`【評価悪化】 今年のプロジェクトへの貢献が不十分とみなされた。(ストライク: ${nextState.consecutivePoorEvaluations})`);
+
+        const companyObj = COMPANIES.find(c => c.id === nextPlayer.companyId);
+        if (companyObj) {
+            const threshold = companyObj.isForeign ? 2 : 3;
+
+            if (nextState.consecutivePoorEvaluations >= threshold) {
+               if (companyObj.isForeign) {
+                   logs.push(`【クビ宣告】 外資系のシビアな評価により、あなたは解雇されました。`);
+                   nextPlayer.companyId = ''; // unemployed
+                   nextPlayer.salary = 0;
+                   nextPlayer.currentProject = null;
+                   nextState.projectProgress = 0;
+                   nextState.consecutivePoorEvaluations = 0;
+                   nextPlayer.positionId = '';
+               } else {
+                   const posIndex = companyObj.positions.findIndex(p => p.id === nextPlayer.positionId);
+                   if (posIndex > 0) {
+                       const demotedPos = companyObj.positions[posIndex - 1];
+                       nextPlayer.positionId = demotedPos.id;
+                       nextPlayer.salary = Math.floor(nextPlayer.salary * 0.8);
+                       logs.push(`【降格】 パフォーマンス不足により、「${demotedPos.name}」に降格となった。給与も減少した。`);
+                   } else {
+                       logs.push(`【窓際族】 これ以上の降格はないが、社内での居場所を失っている...`);
+                   }
+                   nextState.consecutivePoorEvaluations = 0;
+               }
+            }
+        }
+      } else {
+        // 十分な進捗があればストライクを少し回復
+        if (nextState.consecutivePoorEvaluations > 0) {
+          nextState.consecutivePoorEvaluations -= 1;
+        }
+      }
     }
   } else {
     logs.push(`特に決まった案件を持たず、定常業務をこなした。`);
@@ -412,5 +429,5 @@ export const processTurn = (player: PlayerState, allocation: Allocation): Player
   }
 
   nextPlayer.history = [...nextPlayer.history, ...logs];
-  return nextPlayer;
+  return nextState;
 };
