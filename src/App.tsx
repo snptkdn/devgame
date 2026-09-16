@@ -1,6 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { processTurn, calculateTotalLivingCost } from './game/engine';
 import { COMPANIES, PROPERTIES, CARS, createInitialState } from './game/data';
+
+const rankToTier = (rank: number) => {
+    switch(rank) {
+        case 7: return 'S';
+        case 6: return 'A';
+        case 5: return 'B';
+        case 4: return 'C';
+        case 3: return 'D';
+        case 2: return 'E';
+        case 1: return 'F';
+        default: return '?';
+    }
+};
+
 import type { Allocation, PlayerState, GameState } from './game/types';
 import { Brain, Users, Briefcase, Coins, ChevronRight, Activity, Gamepad2, Coffee, Home, CheckCircle, Building, Car as CarIcon, Plus, Minus, PiggyBank, Target } from 'lucide-react';
 
@@ -1057,7 +1071,7 @@ function App() {
                     return (
                         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-2">
                             <div className="text-sm text-gray-500 font-bold">企業名</div>
-                            <div className="text-xl font-black text-gray-900">{comp?.name}</div>
+                            <div className="text-xl font-black text-gray-900"><span className="text-sm bg-gray-200 text-gray-800 px-2 py-1 rounded mr-2 align-middle">Tier {comp ? rankToTier(comp.rank) : '?'}</span>{comp?.name}</div>
 
                             <div className="h-px bg-gray-100 my-4"></div>
 

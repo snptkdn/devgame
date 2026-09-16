@@ -1,20 +1,13 @@
-import type { Company, Property, Car, GameState, Position}  from './types';
+import type { Company, Property, Car, GameState } from './types';
 
 // Exported standard positions
-export const POSITIONS: Position[] = [
-  { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
-  { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 600, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
-  { id: 'p3', name: '係長', level: 3, minSalary: 500, maxSalary: 800, requiredTech: 60, requiredNetwork: 30, requiredTenure: 6, isExecutive: false },
-  { id: 'p4', name: '課長', level: 4, minSalary: 700, maxSalary: 1200, requiredTech: 90, requiredNetwork: 60, requiredTenure: 10, isExecutive: false },
-  { id: 'p5', name: '部長', level: 5, minSalary: 900, maxSalary: 1500, requiredTech: 120, requiredNetwork: 100, requiredTenure: 15, isExecutive: false },
-  { id: 'p6', name: '役員', level: 6, minSalary: 1200, maxSalary: 2500, requiredTech: 150, requiredNetwork: 150, requiredTenure: 20, isExecutive: true }
-];
+// POSITIONS array removed. Each company now has its own positions array.
 
 export const COMPANIES: Company[] = [
   {
     id: 'c1',
     name: '株式会社ミライIT',
-    rank: 1,
+    rank: 4,
     requiredTech: 0,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -22,7 +15,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 500, maxSalary: 1080, requiredTech: 90, requiredNetwork: 45, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 700, maxSalary: 1440, requiredTech: 135, requiredNetwork: 90, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 900, maxSalary: 2160, requiredTech: 180, requiredNetwork: 150, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 1200, maxSalary: 4000, requiredTech: 225, requiredNetwork: 225, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c1_p1',
@@ -68,7 +68,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c2',
     name: 'TechFront',
-    rank: 1,
+    rank: 5,
     requiredTech: 4,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -76,7 +76,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c2_p1',
@@ -122,7 +129,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c3',
     name: 'GigaSystem',
-    rank: 1,
+    rank: 7,
     requiredTech: 8,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -130,7 +137,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 600, maxSalary: 1500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 800, maxSalary: 2100, requiredTech: 90, requiredNetwork: 30, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 1000, maxSalary: 2700, requiredTech: 180, requiredNetwork: 90, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1400, maxSalary: 3600, requiredTech: 270, requiredNetwork: 180, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1800, maxSalary: 5400, requiredTech: 360, requiredNetwork: 300, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 5000, maxSalary: 50000, requiredTech: 450, requiredNetwork: 450, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c3_p1',
@@ -176,7 +190,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c4',
     name: 'サイバーネット工業',
-    rank: 1,
+    rank: 5,
     requiredTech: 12,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -184,7 +198,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c4_p1',
@@ -230,7 +251,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c5',
     name: '日本データソリューション',
-    rank: 1,
+    rank: 3,
     requiredTech: 16,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -238,7 +259,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 400, maxSalary: 900, requiredTech: 60, requiredNetwork: 30, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 560, maxSalary: 1200, requiredTech: 90, requiredNetwork: 60, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 720, maxSalary: 1800, requiredTech: 120, requiredNetwork: 100, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 800, maxSalary: 2000, requiredTech: 150, requiredNetwork: 150, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c5_p1',
@@ -284,7 +312,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c6',
     name: 'CloudSync',
-    rank: 1,
+    rank: 2,
     requiredTech: 20,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -292,7 +320,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 350, maxSalary: 720, requiredTech: 48, requiredNetwork: 24, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 489, maxSalary: 960, requiredTech: 72, requiredNetwork: 48, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 630, maxSalary: 1440, requiredTech: 96, requiredNetwork: 80, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 600, maxSalary: 1000, requiredTech: 120, requiredNetwork: 120, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c6_p1',
@@ -338,7 +373,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c7',
     name: 'NextGen Software',
-    rank: 1,
+    rank: 2,
     requiredTech: 24,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -346,7 +381,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 350, maxSalary: 720, requiredTech: 48, requiredNetwork: 24, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 489, maxSalary: 960, requiredTech: 72, requiredNetwork: 48, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 630, maxSalary: 1440, requiredTech: 96, requiredNetwork: 80, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 600, maxSalary: 1000, requiredTech: 120, requiredNetwork: 120, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c7_p1',
@@ -392,7 +434,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c8',
     name: 'メガ・テクノロジーズ',
-    rank: 1,
+    rank: 3,
     requiredTech: 28,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -400,7 +442,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 400, maxSalary: 900, requiredTech: 60, requiredNetwork: 30, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 560, maxSalary: 1200, requiredTech: 90, requiredNetwork: 60, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 720, maxSalary: 1800, requiredTech: 120, requiredNetwork: 100, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 800, maxSalary: 2000, requiredTech: 150, requiredNetwork: 150, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c8_p1',
@@ -446,7 +495,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c9',
     name: 'Advanced Web',
-    rank: 1,
+    rank: 4,
     requiredTech: 32,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -454,7 +503,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 500, maxSalary: 1080, requiredTech: 90, requiredNetwork: 45, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 700, maxSalary: 1440, requiredTech: 135, requiredNetwork: 90, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 900, maxSalary: 2160, requiredTech: 180, requiredNetwork: 150, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 1200, maxSalary: 4000, requiredTech: 225, requiredNetwork: 225, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c9_p1',
@@ -500,7 +556,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c10',
     name: 'Quantum IT',
-    rank: 1,
+    rank: 4,
     requiredTech: 36,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -508,7 +564,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 500, maxSalary: 1080, requiredTech: 90, requiredNetwork: 45, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 700, maxSalary: 1440, requiredTech: 135, requiredNetwork: 90, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 900, maxSalary: 2160, requiredTech: 180, requiredNetwork: 150, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 1200, maxSalary: 4000, requiredTech: 225, requiredNetwork: 225, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c10_p1',
@@ -554,7 +617,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c11',
     name: 'Neo Tech',
-    rank: 2,
+    rank: 1,
     requiredTech: 40,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -562,7 +625,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 180, maxSalary: 350, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 240, maxSalary: 489, requiredTech: 15, requiredNetwork: 5, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 300, maxSalary: 630, requiredTech: 30, requiredNetwork: 15, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 420, maxSalary: 840, requiredTech: 45, requiredNetwork: 30, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 540, maxSalary: 1260, requiredTech: 60, requiredNetwork: 50, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 500, maxSalary: 600, requiredTech: 75, requiredNetwork: 75, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c11_p1',
@@ -608,7 +678,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c12',
     name: 'SysAdmin Inc.',
-    rank: 2,
+    rank: 1,
     requiredTech: 44,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -616,7 +686,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 180, maxSalary: 350, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 240, maxSalary: 489, requiredTech: 15, requiredNetwork: 5, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 300, maxSalary: 630, requiredTech: 30, requiredNetwork: 15, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 420, maxSalary: 840, requiredTech: 45, requiredNetwork: 30, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 540, maxSalary: 1260, requiredTech: 60, requiredNetwork: 50, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 500, maxSalary: 600, requiredTech: 75, requiredNetwork: 75, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c12_p1',
@@ -662,7 +739,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c13',
     name: 'DataFlow Group',
-    rank: 2,
+    rank: 3,
     requiredTech: 48,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -670,7 +747,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 400, maxSalary: 900, requiredTech: 60, requiredNetwork: 30, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 560, maxSalary: 1200, requiredTech: 90, requiredNetwork: 60, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 720, maxSalary: 1800, requiredTech: 120, requiredNetwork: 100, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 800, maxSalary: 2000, requiredTech: 150, requiredNetwork: 150, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c13_p1',
@@ -716,7 +800,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c14',
     name: 'Global IT Solutions',
-    rank: 2,
+    rank: 3,
     requiredTech: 52,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -724,7 +808,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 240, maxSalary: 500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 320, maxSalary: 700, requiredTech: 30, requiredNetwork: 10, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 400, maxSalary: 900, requiredTech: 60, requiredNetwork: 30, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 560, maxSalary: 1200, requiredTech: 90, requiredNetwork: 60, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 720, maxSalary: 1800, requiredTech: 120, requiredNetwork: 100, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 800, maxSalary: 2000, requiredTech: 150, requiredNetwork: 150, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c14_p1',
@@ -770,7 +861,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c15',
     name: 'DevWorks',
-    rank: 2,
+    rank: 5,
     requiredTech: 56,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -778,7 +869,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c15_p1',
@@ -824,7 +922,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c16',
     name: 'TechNova',
-    rank: 2,
+    rank: 4,
     requiredTech: 60,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -832,7 +930,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 500, maxSalary: 1080, requiredTech: 90, requiredNetwork: 45, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 700, maxSalary: 1440, requiredTech: 135, requiredNetwork: 90, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 900, maxSalary: 2160, requiredTech: 180, requiredNetwork: 150, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 1200, maxSalary: 4000, requiredTech: 225, requiredNetwork: 225, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c16_p1',
@@ -886,7 +991,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 350, maxSalary: 720, requiredTech: 48, requiredNetwork: 24, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 489, maxSalary: 960, requiredTech: 72, requiredNetwork: 48, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 630, maxSalary: 1440, requiredTech: 96, requiredNetwork: 80, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 600, maxSalary: 1000, requiredTech: 120, requiredNetwork: 120, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c17_p1',
@@ -940,7 +1052,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 210, maxSalary: 400, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 280, maxSalary: 560, requiredTech: 24, requiredNetwork: 8, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 350, maxSalary: 720, requiredTech: 48, requiredNetwork: 24, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 489, maxSalary: 960, requiredTech: 72, requiredNetwork: 48, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 630, maxSalary: 1440, requiredTech: 96, requiredNetwork: 80, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 600, maxSalary: 1000, requiredTech: 120, requiredNetwork: 120, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c18_p1',
@@ -986,7 +1105,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c19',
     name: 'Prime System',
-    rank: 2,
+    rank: 4,
     requiredTech: 72,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -994,7 +1113,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 300, maxSalary: 600, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 400, maxSalary: 840, requiredTech: 45, requiredNetwork: 15, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 500, maxSalary: 1080, requiredTech: 90, requiredNetwork: 45, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 700, maxSalary: 1440, requiredTech: 135, requiredNetwork: 90, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 900, maxSalary: 2160, requiredTech: 180, requiredNetwork: 150, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 1200, maxSalary: 4000, requiredTech: 225, requiredNetwork: 225, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c19_p1',
@@ -1040,7 +1166,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c20',
     name: 'Alpha IT',
-    rank: 2,
+    rank: 5,
     requiredTech: 76,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1048,7 +1174,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c20_p1',
@@ -1094,7 +1227,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c21',
     name: 'Omega Tech',
-    rank: 3,
+    rank: 6,
     requiredTech: 80,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -1102,7 +1235,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 750, maxSalary: 1800, requiredTech: 150, requiredNetwork: 75, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1050, maxSalary: 2400, requiredTech: 225, requiredNetwork: 150, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1350, maxSalary: 3600, requiredTech: 300, requiredNetwork: 250, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 3000, maxSalary: 15000, requiredTech: 375, requiredNetwork: 375, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c21_p1',
@@ -1148,7 +1288,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c22',
     name: 'Zenith Software',
-    rank: 3,
+    rank: 6,
     requiredTech: 84,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1156,7 +1296,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 750, maxSalary: 1800, requiredTech: 150, requiredNetwork: 75, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1050, maxSalary: 2400, requiredTech: 225, requiredNetwork: 150, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1350, maxSalary: 3600, requiredTech: 300, requiredNetwork: 250, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 3000, maxSalary: 15000, requiredTech: 375, requiredNetwork: 375, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c22_p1',
@@ -1202,7 +1349,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c23',
     name: 'Apex IT',
-    rank: 3,
+    rank: 5,
     requiredTech: 88,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1210,7 +1357,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c23_p1',
@@ -1256,7 +1410,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c24',
     name: 'Vertex Tech',
-    rank: 3,
+    rank: 6,
     requiredTech: 92,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -1264,7 +1418,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 750, maxSalary: 1800, requiredTech: 150, requiredNetwork: 75, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1050, maxSalary: 2400, requiredTech: 225, requiredNetwork: 150, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1350, maxSalary: 3600, requiredTech: 300, requiredNetwork: 250, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 3000, maxSalary: 15000, requiredTech: 375, requiredNetwork: 375, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c24_p1',
@@ -1310,7 +1471,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c25',
     name: 'Pinnacle Systems',
-    rank: 3,
+    rank: 6,
     requiredTech: 96,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1318,7 +1479,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 750, maxSalary: 1800, requiredTech: 150, requiredNetwork: 75, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1050, maxSalary: 2400, requiredTech: 225, requiredNetwork: 150, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1350, maxSalary: 3600, requiredTech: 300, requiredNetwork: 250, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 3000, maxSalary: 15000, requiredTech: 375, requiredNetwork: 375, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c25_p1',
@@ -1364,7 +1532,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c26',
     name: 'Summit IT',
-    rank: 3,
+    rank: 5,
     requiredTech: 100,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1372,7 +1540,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c26_p1',
@@ -1418,7 +1593,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c27',
     name: 'Crest Tech',
-    rank: 3,
+    rank: 7,
     requiredTech: 104,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -1426,7 +1601,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 600, maxSalary: 1500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 800, maxSalary: 2100, requiredTech: 90, requiredNetwork: 30, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 1000, maxSalary: 2700, requiredTech: 180, requiredNetwork: 90, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1400, maxSalary: 3600, requiredTech: 270, requiredNetwork: 180, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1800, maxSalary: 5400, requiredTech: 360, requiredNetwork: 300, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 5000, maxSalary: 50000, requiredTech: 450, requiredNetwork: 450, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c27_p1',
@@ -1472,7 +1654,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c28',
     name: 'Crown Software',
-    rank: 3,
+    rank: 5,
     requiredTech: 108,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1480,7 +1662,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 360, maxSalary: 750, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 480, maxSalary: 1050, requiredTech: 60, requiredNetwork: 20, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 600, maxSalary: 1350, requiredTech: 120, requiredNetwork: 60, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 840, maxSalary: 1800, requiredTech: 180, requiredNetwork: 120, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1080, maxSalary: 2700, requiredTech: 240, requiredNetwork: 200, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 2000, maxSalary: 8000, requiredTech: 300, requiredNetwork: 300, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c28_p1',
@@ -1526,7 +1715,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c29',
     name: 'Royal IT',
-    rank: 3,
+    rank: 6,
     requiredTech: 112,
     isForeign: false,
     baseSalaryMultiplier: 1,
@@ -1534,7 +1723,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.05,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 450, maxSalary: 1000, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 600, maxSalary: 1400, requiredTech: 75, requiredNetwork: 25, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 750, maxSalary: 1800, requiredTech: 150, requiredNetwork: 75, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1050, maxSalary: 2400, requiredTech: 225, requiredNetwork: 150, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1350, maxSalary: 3600, requiredTech: 300, requiredNetwork: 250, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 3000, maxSalary: 15000, requiredTech: 375, requiredNetwork: 375, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c29_p1',
@@ -1580,7 +1776,7 @@ export const COMPANIES: Company[] = [
   {
     id: 'c30',
     name: 'Imperial Tech',
-    rank: 3,
+    rank: 7,
     requiredTech: 116,
     isForeign: true,
     baseSalaryMultiplier: 1.5,
@@ -1588,7 +1784,14 @@ export const COMPANIES: Company[] = [
     baseRaiseRate: 1.1,
     loanInterestRate: 0.05,
     requiredNetwork: 0,
-    positions: POSITIONS,
+    positions: [
+      { id: 'p1', name: '平社員', level: 1, minSalary: 600, maxSalary: 1500, requiredTech: 0, requiredNetwork: 0, requiredTenure: 0, isExecutive: false },
+      { id: 'p2', name: '主任', level: 2, minSalary: 800, maxSalary: 2100, requiredTech: 90, requiredNetwork: 30, requiredTenure: 3, isExecutive: false },
+      { id: 'p3', name: '係長', level: 3, minSalary: 1000, maxSalary: 2700, requiredTech: 180, requiredNetwork: 90, requiredTenure: 6, isExecutive: false },
+      { id: 'p4', name: '課長', level: 4, minSalary: 1400, maxSalary: 3600, requiredTech: 270, requiredNetwork: 180, requiredTenure: 10, isExecutive: false },
+      { id: 'p5', name: '部長', level: 5, minSalary: 1800, maxSalary: 5400, requiredTech: 360, requiredNetwork: 300, requiredTenure: 15, isExecutive: false },
+      { id: 'p6', name: '役員', level: 6, minSalary: 5000, maxSalary: 50000, requiredTech: 450, requiredNetwork: 450, requiredTenure: 20, isExecutive: true }
+    ],
     projects: [
       {
         id: 'c30_p1',
@@ -1634,18 +1837,35 @@ export const COMPANIES: Company[] = [
 ];
 
 export const PROPERTIES: Property[] = [
-    { id: 'rent_1', name: 'ボロアパート', type: 'rent', price: 5, initialCost: 15 },
-    { id: 'rent_2', name: '普通のマンション', type: 'rent', price: 10, initialCost: 30 },
-    { id: 'rent_3', name: '高級タワマン', type: 'rent', price: 30, initialCost: 100 },
-    { id: 'buy_1', name: '中古マンション', type: 'buy', price: 3000, initialCost: 200, depreciationRate: 0.03 },
-    { id: 'buy_2', name: '新築戸建て', type: 'buy', price: 5000, initialCost: 400, depreciationRate: 0.05 },
-    { id: 'buy_3', name: '都心タワマン', type: 'buy', price: 15000, initialCost: 1000, depreciationRate: 0.01 },
+    { id: 'rent_1', name: '築40年木造アパート(風呂なし)', type: 'rent', price: 3, initialCost: 5 },
+    { id: 'rent_2', name: '郊外ボロワンルーム', type: 'rent', price: 5, initialCost: 15 },
+    { id: 'rent_3', name: '普通の1Kアパート', type: 'rent', price: 8, initialCost: 20 },
+    { id: 'rent_4', name: '都心築浅1LDK', type: 'rent', price: 15, initialCost: 40 },
+    { id: 'rent_5', name: '高級タワマン(低層階)', type: 'rent', price: 30, initialCost: 100 },
+    { id: 'rent_6', name: '高級タワマン(高層階)', type: 'rent', price: 50, initialCost: 200 },
+    { id: 'rent_7', name: 'ブリリアント六本木(中層階)', type: 'rent', price: 100, initialCost: 400 },
+    { id: 'buy_1', name: '中古ボロ戸建て', type: 'buy', price: 1500, initialCost: 100, depreciationRate: 0.05 },
+    { id: 'buy_2', name: '郊外の中古マンション', type: 'buy', price: 3000, initialCost: 200, depreciationRate: 0.04 },
+    { id: 'buy_3', name: '新築建売戸建て', type: 'buy', price: 5000, initialCost: 400, depreciationRate: 0.05 },
+    { id: 'buy_4', name: '都心の中古タワマン', type: 'buy', price: 8000, initialCost: 600, depreciationRate: 0.02 },
+    { id: 'buy_5', name: '都心の新築タワマン', type: 'buy', price: 15000, initialCost: 1000, depreciationRate: 0.02 },
+    { id: 'buy_6', name: '高級住宅街の注文住宅', type: 'buy', price: 30000, initialCost: 2000, depreciationRate: 0.04 },
+    { id: 'buy_7', name: 'ブリリアント六本木(ペントハウス)', type: 'buy', price: 100000, initialCost: 5000, depreciationRate: 0.01 },
 ];
 
 export const CARS: Car[] = [
-    { id: 'car_1', name: '中古コンパクトカー', price: 100, depreciationRate: 0.2 },
-    { id: 'car_2', name: '国産ミニバン', price: 350, depreciationRate: 0.15 },
-    { id: 'car_3', name: '高級外車', price: 1200, depreciationRate: 0.25 },
+    { id: 'car_1', name: 'ボロボロの軽自動車', price: 30, depreciationRate: 0.3 },
+    { id: 'car_2', name: '型落ちコンパクトカー', price: 80, depreciationRate: 0.25 },
+    { id: 'car_3', name: '中古のハイブリッド車', price: 150, depreciationRate: 0.2 },
+    { id: 'car_4', name: '新車の軽自動車', price: 200, depreciationRate: 0.2 },
+    { id: 'car_5', name: '国産ファミリーミニバン', price: 350, depreciationRate: 0.15 },
+    { id: 'car_6', name: '国産SUV', price: 450, depreciationRate: 0.15 },
+    { id: 'car_7', name: '型落ち高級外車', price: 600, depreciationRate: 0.3 },
+    { id: 'car_8', name: 'ドイツ製高級セダン', price: 1200, depreciationRate: 0.2 },
+    { id: 'car_9', name: 'ドイツ製高級SUV', price: 1500, depreciationRate: 0.2 },
+    { id: 'car_10', name: 'イギリス製高級クーペ', price: 2500, depreciationRate: 0.15 },
+    { id: 'car_11', name: 'イタリア製スーパーカー', price: 4000, depreciationRate: 0.1 },
+    { id: 'car_12', name: 'ハイパーカー(限定モデル)', price: 20000, depreciationRate: 0.05 },
 ];
 
 export const createInitialState = (): GameState => {
